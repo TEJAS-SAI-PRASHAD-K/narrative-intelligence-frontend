@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  /*
+   * Dark-first, single theme. There is no light palette and no theme switcher --
+   * one dense analyst theme, done well (Phase 5 hard constraint 12).
+   */
+  :root {
+    --background: 222 24% 7%;
+    --foreground: 210 18% 92%;
+
+    --surface: 222 22% 10%;
+    --surface-raised: 222 20% 13%;
+    --surface-sunken: 222 26% 5%;
+
+    --card: 222 22% 10%;
+    --card-foreground: 210 18% 92%;
+
+    --popover: 222 22% 12%;
+    --popover-foreground: 210 18% 92%;
+
+    --primary: 205 90% 58%;
+    --primary-foreground: 222 40% 8%;
+
+    --secondary: 222 16% 18%;
+    --secondary-foreground: 210 18% 92%;
+
+    --muted: 222 16% 16%;
+    --muted-foreground: 215 12% 60%;
+
+    --accent: 222 18% 20%;
+    --accent-foreground: 210 18% 95%;
+
+    --destructive: 0 68% 55%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 14% 20%;
+    --input: 220 14% 22%;
+    --ring: 205 90% 58%;
+
+    --radius: 0.375rem;
+
+    /* Risk roles. Grayscale-safe: each pairs with a distinct glyph + text label
+       in <RiskDot>, so a printed screenshot stays unambiguous. */
+    --risk-high: 4 78% 60%;
+    --risk-high-bg: 4 60% 16%;
+    --risk-med: 36 88% 58%;
+    --risk-med-bg: 36 60% 14%;
+    --risk-low: 152 52% 48%;
+    --risk-low-bg: 152 40% 12%;
+    --risk-none: 215 10% 48%;
+    --risk-none-bg: 215 12% 16%;
+
+    --state-pending: 215 12% 58%;
+    --state-running: 205 90% 58%;
+    --state-succeeded: 152 52% 48%;
+    --state-failed: 4 78% 60%;
+    --state-cancelled: 262 30% 58%;
+
+    --ai: 268 72% 70%;
+    --ai-bg: 268 40% 18%;
+
+    --series-1: 205 90% 60%;
+    --series-2: 268 72% 68%;
+    --series-3: 152 52% 50%;
+    --series-4: 36 88% 60%;
+    --series-5: 330 68% 62%;
+    --series-6: 186 62% 50%;
+    --series-7: 20 78% 60%;
+    --series-8: 96 42% 55%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings:
+      'cv02' 1,
+      'cv03' 1,
+      'cv04' 1,
+      'tnum' 1;
+  }
+
+  /* Visible focus ring everywhere. Accessibility is not a phase-6 cleanup. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: hsl(var(--surface-sunken));
+  }
+  ::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 6px;
+    border: 2px solid hsl(var(--surface-sunken));
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}
+
+@layer components {
+  .skeleton-shimmer {
+    @apply relative overflow-hidden bg-muted;
+  }
+  .skeleton-shimmer::after {
+    @apply absolute inset-0 -translate-x-full animate-shimmer bg-gradient-to-r from-transparent via-white/5 to-transparent;
+    content: '';
+  }
+}
+
+@layer utilities {
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
