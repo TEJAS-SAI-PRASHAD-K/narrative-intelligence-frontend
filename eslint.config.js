@@ -35,6 +35,17 @@ export default tseslint.config(
     },
   },
   {
+    // Primitives and providers deliberately co-locate a component with its variant
+    // helper or its hook (the shadcn/Radix convention). Fast-refresh granularity is
+    // not worth splitting every one of them into two files.
+    files: [
+      'src/components/ui/**/*.tsx',
+      'src/jobs/JobStore.tsx',
+      'src/components/states/**/*.tsx',
+    ],
+    rules: { 'react-refresh/only-export-components': 'off' },
+  },
+  {
     files: ['*.config.ts', '*.config.js'],
     languageOptions: { globals: globals.node },
   },
