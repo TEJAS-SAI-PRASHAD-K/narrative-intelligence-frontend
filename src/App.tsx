@@ -1,4 +1,4 @@
-import { QueryClientProvider } from '@tanstack/react-query';
+import { QueryClientProvider, type QueryClient } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { lazy, Suspense, useState } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
@@ -41,10 +41,19 @@ function PageFallback() {
   );
 }
 
+declare global {
+  interface Window {
+    /** Dev-only handle for inspecting the cache from the console. */
+    __queryClient?: QueryClient;
+  }
+}
+
 export function App() {
   // One client per app instance, created once -- a client rebuilt on render would
   // throw away the cache on every state change.
   const [queryClient] = useState(createQueryClient);
+
+  if (import.meta.env.DEV) window.__queryClient = queryClient;
 
   return (
     <ErrorBoundary>

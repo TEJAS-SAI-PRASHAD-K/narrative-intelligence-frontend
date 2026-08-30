@@ -46,13 +46,15 @@ export function AppLayout() {
             </div>
           )}
 
-          {isLoading && (
+          {isLoading && !error && (
             <div className="p-4">
               <SkeletonCard />
             </div>
           )}
 
-          {!isLoading && Boolean(error) && (
+          {/* An error wins over the skeleton: a background refetch after a failure
+              must not hide the failure behind a loading state. */}
+          {Boolean(error) && (
             <div className="p-4">
               <ErrorState
                 error={error}
@@ -76,7 +78,9 @@ export function AppLayout() {
             </div>
           )}
 
-          {!isLoading && !error && !notFound && (
+          {/* `/jobs` and `/settings/keys` live in this shell but carry no slug, so a
+              resolved project is required only when the route actually has one. */}
+          {!isLoading && !error && !notFound && (!slug || project) && (
             /* Keyed on the project so a switch remounts pages rather than briefly
                rendering one project's data under another project's route. */
             <div key={projectId || location.pathname}>

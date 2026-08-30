@@ -46,7 +46,12 @@ export function InfoTip({
           type="button"
           aria-label={label}
           className={cn(
-            'inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-border text-[9px] font-semibold leading-none text-muted-foreground transition-colors hover:border-foreground hover:text-foreground',
+            'inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-border text-[9px] font-semibold leading-none text-muted-foreground transition-colors',
+            'hover:border-foreground hover:text-foreground',
+            // Explicit ring: the definition affordance is the one control an analyst
+            // must be able to reach and see focus on, since it is how every number on
+            // screen becomes explainable.
+            'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background',
             className,
           )}
         >

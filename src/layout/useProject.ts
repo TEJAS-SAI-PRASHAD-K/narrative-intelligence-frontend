@@ -19,7 +19,7 @@ export function useCurrentProject(): {
   notFound: boolean;
 } {
   const { projectSlug } = useParams<{ projectSlug: string }>();
-  const { data, isLoading, error } = useProjects();
+  const { data, isLoading, isSuccess, error } = useProjects();
 
   const projects = useMemo(() => data?.items ?? [], [data]);
   const project = useMemo(
@@ -34,6 +34,14 @@ export function useCurrentProject(): {
     projects,
     isLoading,
     error,
-    notFound: Boolean(projectSlug) && !isLoading && !error && project === undefined,
+    /**
+     * Only after the query has actually succeeded. Deriving this from
+     * `!isLoading && !error` was wrong: there is a window before the first fetch is
+     * dispatched where the query is pending, `isLoading` is false and `error` is null,
+     * and a slug that exists would flash "no such project" -- or, with the backend
+     * down, get stuck on it, telling the analyst their link is broken when the truth
+     * is the API is unreachable.
+     */
+    notFound: Boolean(projectSlug) && isSuccess && project === undefined,
   };
 }

@@ -91,6 +91,7 @@ export default function MediaPage() {
           ref={inputRef}
           type="file"
           accept="image/*,video/*"
+          aria-label="Choose an image or video to check"
           className="sr-only"
           onChange={(e) => {
             const file = e.target.files?.[0];

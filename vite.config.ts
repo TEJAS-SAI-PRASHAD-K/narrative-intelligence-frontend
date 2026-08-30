@@ -14,19 +14,11 @@ export default defineConfig({
   build: {
     target: 'es2022',
     sourcemap: false,
-    rollupOptions: {
-      output: {
-        // Keep the WebGL graph stack out of the initial bundle. Acceptance criterion:
-        // initial JS < 400KB gzipped with the graph page code-split out of it.
-        manualChunks(id: string) {
-          if (!id.includes('node_modules')) return undefined;
-          if (id.includes('sigma') || id.includes('graphology')) return 'graph-vendor';
-          if (id.includes('recharts') || id.includes('d3-')) return 'chart-vendor';
-          if (id.includes('react-router')) return 'router-vendor';
-          return undefined;
-        },
-      },
-    },
+    // No manualChunks. Every page is lazy-loaded, so rollup already puts recharts
+    // behind the overview chunk and sigma/graphology behind the graph chunk. Forcing
+    // named vendor chunks here made Vite emit a <link rel="modulepreload"> for them
+    // from the entry, which pulled the whole WebGL stack into the initial download --
+    // exactly what the code-split was supposed to prevent.
   },
   test: {
     environment: 'jsdom',
