@@ -1,8 +1,31 @@
 import type Graph from 'graphology';
+import { MonitorX } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import Sigma from 'sigma';
 import { resolveToken } from '@/lib/tokens';
 import { cn } from '@/lib/utils';
+
+/**
+ * Sigma renders through WebGL and throws deep inside its own init when the context is
+ * unavailable -- the failure surfaces as `Cannot read properties of null (reading
+ * 'blendFunc')`, which tells an analyst nothing. That happens on headless browsers, on
+ * machines where the GPU is blocklisted, and over some remote-desktop sessions.
+ *
+ * So support is checked before construction and the constructor is guarded, and the
+ * page explains the problem instead of crashing into the error boundary.
+ */
+function hasWebGL(): boolean {
+  try {
+    const canvas = document.createElement('canvas');
+    return Boolean(
+      canvas.getContext('webgl2') ??
+        canvas.getContext('webgl') ??
+        canvas.getContext('experimental-webgl'),
+    );
+  } catch {
+    return false;
+  }
+}
 
 export interface LassoSelection {
   nodeIds: string[];
@@ -35,6 +58,7 @@ export function GraphCanvas({
   const containerRef = useRef<HTMLDivElement>(null);
   const sigmaRef = useRef<Sigma | null>(null);
   const [hovered, setHovered] = useState<{ label: string; x: number; y: number } | null>(null);
+  const [initError, setInitError] = useState<string | null>(null);
 
   // Lasso path in screen coordinates. Kept in a ref so dragging does not re-render
   // React on every mousemove.
@@ -53,17 +77,31 @@ export function GraphCanvas({
     const container = containerRef.current;
     if (!container || !graph) return;
 
-    const renderer = new Sigma(graph, container, {
-      renderLabels: false,
-      renderEdgeLabels: false,
-      defaultEdgeColor: resolveToken('--border'),
-      allowInvalidContainer: true,
-      // Node and edge reducers apply the `hidden` flags the scrubber and filters set,
-      // without mutating the underlying graph structure.
-      nodeReducer: (_id, data) => (data.hidden ? { ...data, hidden: true } : data),
-      edgeReducer: (_id, data) => (data.hidden ? { ...data, hidden: true } : data),
-    });
+    if (!hasWebGL()) {
+      setInitError(
+        'This browser has no WebGL context available, so the network graph cannot be drawn.',
+      );
+      return;
+    }
 
+    let renderer: Sigma;
+    try {
+      renderer = new Sigma(graph, container, {
+        renderLabels: false,
+        renderEdgeLabels: false,
+        defaultEdgeColor: resolveToken('--border'),
+        allowInvalidContainer: true,
+        // Node and edge reducers apply the `hidden` flags the scrubber and filters set,
+        // without mutating the underlying graph structure.
+        nodeReducer: (_id, data) => (data.hidden ? { ...data, hidden: true } : data),
+        edgeReducer: (_id, data) => (data.hidden ? { ...data, hidden: true } : data),
+      });
+    } catch (err) {
+      setInitError(err instanceof Error ? err.message : String(err));
+      return;
+    }
+
+    setInitError(null);
     renderer.on('clickNode', ({ node }) => onNodeClickRef.current(node));
 
     renderer.on('enterNode', ({ node }) => {
@@ -150,6 +188,29 @@ export function GraphCanvas({
       renderer.getCamera().enable();
     };
   }, [lassoMode, graph]);
+
+  if (initError) {
+    return (
+      <div
+        role="alert"
+        className={cn('flex h-full w-full items-center justify-center p-6', className)}
+      >
+        <div className="max-w-md space-y-2 rounded-lg border border-risk-med/40 bg-risk-med-bg p-4">
+          <div className="flex items-center gap-2">
+            <MonitorX className="h-4 w-4 shrink-0 text-risk-med" aria-hidden="true" />
+            <p className="text-sm font-medium text-risk-med">The graph cannot be rendered here</p>
+          </div>
+          <p className="text-xs leading-relaxed">{initError}</p>
+          <p className="text-2xs leading-relaxed text-muted-foreground">
+            Every other view still works, and the node list is available from{' '}
+            <strong>Inspect → Table</strong> above — the data is loaded, only the WebGL
+            drawing surface is unavailable. Enabling hardware acceleration in the browser
+            usually resolves it.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={cn('relative h-full w-full', className)}>
