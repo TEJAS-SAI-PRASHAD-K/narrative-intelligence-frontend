@@ -91,6 +91,28 @@ and converts it to `rgba()`, cached per token and alpha, with a visible grey fal
 so a bad token name reads as "wrong colour" rather than "node missing". Pinned by
 `tokens.test.ts`.
 
+### 6. `DEMO_MODE=1` ignores write bodies
+
+**Observed.** `PATCH /narratives/{id}` under `DEMO_MODE=1` returns `200` with the
+original fixture row: the new title is not applied and `edited_by_user` stays `false`.
+The same holds for the other mutations — demo mode is a read-only fixture layer that
+answers every route with schema-valid data.
+
+**UI behaviour.** The rename path treats "accepted but not reflected" as its own state
+rather than as success. `reconcileNarrative` keeps the analyst's text whenever the
+incoming row's `updated_at` is not strictly newer than the one the edit was based on,
+the feed holds the pending title until the server actually serves it, and a toast says
+the write is not yet visible. Against a real backend the write lands, the timestamp
+advances, and the override releases on the next refetch.
+
+This also covers the real-world version of the same race: a read replica, or a
+recluster job's invalidation arriving between the `PATCH` and its visibility. Pinned by
+`src/api/reconcile.test.ts`.
+
+**Phase 4 action.** None required for demo mode. Worth stating in the demo-mode docs
+that writes are accepted and discarded, so the next consumer does not read the revert
+as a frontend bug.
+
 ---
 
 ## Gaps — data a screen wanted and no route provides

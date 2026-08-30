@@ -6,6 +6,7 @@ import {
 } from '@tanstack/react-query';
 import { api } from '@/api/client';
 import { qk } from '@/api/keys';
+import { reconcileNarrative } from '@/api/reconcile';
 import type {
   AuthorOut,
   CompassContext,
@@ -183,7 +184,12 @@ export function useUpdateNarrative() {
     },
 
     onSuccess: (updated) => {
-      client.setQueryData(qk.narratives.detail(updated.id), updated);
+      // Reconcile rather than overwrite: if the server echoes a row older than the one
+      // the edit was based on (a read replica, or a demo backend that ignores writes),
+      // the analyst's text is kept until the write is actually visible.
+      const previous = client.getQueryData<NarrativeDetail>(qk.narratives.detail(updated.id));
+      client.setQueryData(qk.narratives.detail(updated.id), reconcileNarrative(previous, updated));
+
       // Refresh the feed so the card matches the detail view, but only the feed.
       void client.invalidateQueries({ queryKey: [...qk.narratives.all, 'list'] });
     },

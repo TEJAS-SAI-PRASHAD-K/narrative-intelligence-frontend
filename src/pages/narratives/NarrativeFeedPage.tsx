@@ -74,13 +74,28 @@ export default function NarrativeFeedPage() {
     async (narrativeId: string, title: string) => {
       setPendingRenames((prev) => ({ ...prev, [narrativeId]: title }));
       try {
-        await updateNarrative.mutateAsync({ id: narrativeId, body: { title } });
-        setPendingRenames((prev) => {
-          const next = { ...prev };
-          delete next[narrativeId];
-          return next;
-        });
-        toast({ title: 'Narrative renamed', variant: 'success' });
+        const updated = await updateNarrative.mutateAsync({ id: narrativeId, body: { title } });
+
+        // Only stop overriding once the server is actually serving the new title. A
+        // backend that accepted the write but has not surfaced it yet -- a read
+        // replica, or a fixture backend that ignores bodies -- would otherwise make the
+        // edit appear to vanish the moment the feed refetches.
+        if (updated.title.text === title) {
+          setPendingRenames((prev) => {
+            const next = { ...prev };
+            delete next[narrativeId];
+            return next;
+          });
+          toast({ title: 'Narrative renamed', variant: 'success' });
+        } else {
+          toast({
+            title: 'Rename accepted but not yet visible',
+            description:
+              'The server returned the previous title. Your text is kept on screen until it catches up.',
+            variant: 'error',
+            durationMs: 9000,
+          });
+        }
       } catch (err) {
         setPendingRenames((prev) => {
           const next = { ...prev };
