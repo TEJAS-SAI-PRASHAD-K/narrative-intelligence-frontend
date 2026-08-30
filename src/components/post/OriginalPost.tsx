@@ -110,9 +110,10 @@ export function OriginalPost({
 
         {(post.hashtags?.length || post.domains?.length) && !compact ? (
           <div className="flex flex-wrap gap-1 pt-0.5">
+            {/* The API returns hashtags already prefixed; do not add a second #. */}
             {post.hashtags?.slice(0, 6).map((h) => (
               <Badge key={h} variant="muted">
-                #{h}
+                {h.startsWith('#') ? h : `#${h}`}
               </Badge>
             ))}
             {post.domains?.slice(0, 4).map((d) => (
