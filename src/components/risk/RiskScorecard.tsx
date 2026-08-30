@@ -70,9 +70,11 @@ export function RiskScorecard({
           {scorecard.fusion_score !== null && scorecard.fusion_score !== undefined && (
             <span className="text-2xs text-muted-foreground">
               Fusion score{' '}
+              {/* 0-100, unlike the six 0-1 signals above it. Say so. */}
               <span className="tabular font-medium text-foreground">
                 {scorecard.fusion_score.toFixed(1)}
               </span>
+              <span className="text-muted-foreground"> / 100</span>
             </span>
           )}
           {scorecard.scoring_version && (

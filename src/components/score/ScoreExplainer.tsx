@@ -90,7 +90,7 @@ function Body({ explanation }: { explanation: Explanation }) {
         <div className="flex flex-wrap items-baseline gap-3">
           {narrative ? (
             <>
-              <Headline label="Fusion score" value={explanation.fusion_score} digits={1} />
+              <Headline label="Fusion score" value={explanation.fusion_score} digits={1} suffix=" / 100" />
               <div className="flex items-center gap-1.5">
                 <span className="text-2xs uppercase tracking-wide text-muted-foreground">
                   Priority
@@ -100,7 +100,8 @@ function Body({ explanation }: { explanation: Explanation }) {
             </>
           ) : (
             <>
-              <Headline label="Risk score" value={explanation.risk_score} digits={3} />
+              {/* risk_score shares AuthorOut's 0-100 scale; bot_score is 0-1. */}
+              <Headline label="Risk score" value={explanation.risk_score} digits={1} suffix=" / 100" />
               <Headline label="Bot score" value={explanation.bot_score} digits={3} />
             </>
           )}
@@ -277,16 +278,26 @@ function Headline({
   label,
   value,
   digits,
+  suffix,
 }: {
   label: string;
   value: number | null;
   digits: number;
+  /** States the scale, so "86.5" is never mistaken for a fraction. */
+  suffix?: string;
 }) {
   return (
     <div>
       <span className="block text-2xs uppercase tracking-wide text-muted-foreground">{label}</span>
       <span className="text-xl font-semibold tabular">
-        {isMeasured(value) ? value.toFixed(digits) : <NotMeasured />}
+        {isMeasured(value) ? (
+          <>
+            {value.toFixed(digits)}
+            {suffix && <span className="text-xs font-normal text-muted-foreground">{suffix}</span>}
+          </>
+        ) : (
+          <NotMeasured />
+        )}
       </span>
     </div>
   );

@@ -2,7 +2,7 @@ import { useHighRiskPosts } from '@/api/queries/overview';
 import { OriginalPost } from '@/components/post/OriginalPost';
 import { EmptyState, ErrorState, SkeletonCard } from '@/components/states';
 import type { FilterSpec } from '@/lib/filters';
-import { formatScore } from '@/lib/format';
+import { formatScore100 } from '@/lib/format';
 
 /**
  * The right rail: the posts the scorer flagged, each with `reasons[]` rendered as
@@ -48,7 +48,8 @@ export function HighRiskRail({
           <li key={entry.post.id} className="space-y-1">
             <div className="flex items-baseline gap-2">
               <span className="text-2xs uppercase tracking-wide text-muted-foreground">
-                Risk {formatScore(entry.risk_score)}
+                {/* HighRiskPost.risk_score is 0-100, like AuthorOut.risk_score. */}
+                Risk {formatScore100(entry.risk_score)}
               </span>
               {entry.narrative_title && (
                 <span className="min-w-0 truncate text-2xs text-muted-foreground">

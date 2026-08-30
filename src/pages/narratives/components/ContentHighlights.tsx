@@ -2,14 +2,12 @@ import { useState } from 'react';
 import { useNarrativeAuthors, useNarrativePosts } from '@/api/queries/narratives';
 import type { AuthorOut, PostOut } from '@/api/types';
 import { OriginalPost } from '@/components/post/OriginalPost';
-import { NotMeasured } from '@/components/risk/NotMeasured';
-import { RiskDot } from '@/components/risk/RiskDot';
-import { riskLevelFromScore } from '@/components/risk/riskLevel';
+import { ScoreCell } from '@/components/risk/ScoreCell';
 import { EmptyState, ErrorState, SkeletonCard, SkeletonTableRows } from '@/components/states';
 import { EntityTable } from '@/components/table/EntityTable';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import type { FilterSpec } from '@/lib/filters';
-import { formatCount, formatScore, platformLabel } from '@/lib/format';
+import { formatCount, platformLabel } from '@/lib/format';
 
 /**
  * Top Posts | Top Authors for one narrative. Rows open the full post or the author
@@ -96,22 +94,13 @@ export function ContentHighlights({
                 {
                   id: 'risk',
                   header: 'Risk',
-                  cell: (a) =>
-                    a.risk_score === null || a.risk_score === undefined ? (
-                      <NotMeasured />
-                    ) : (
-                      <RiskDot level={riskLevelFromScore(a.risk_score)} label={formatScore(a.risk_score)} />
-                    ),
+                  headerHint: 'AuthorOut.risk_score is 0-100, not a percentage.',
+                  cell: (a) => <ScoreCell value={a.risk_score} scale="hundred" />,
                 },
                 {
                   id: 'bot',
                   header: 'Bot-like',
-                  cell: (a) =>
-                    a.bot_score === null || a.bot_score === undefined ? (
-                      <NotMeasured />
-                    ) : (
-                      <RiskDot level={riskLevelFromScore(a.bot_score)} label={formatScore(a.bot_score)} />
-                    ),
+                  cell: (a) => <ScoreCell value={a.bot_score} scale="unit" />,
                 },
               ]}
               rows={authors.data?.items ?? []}

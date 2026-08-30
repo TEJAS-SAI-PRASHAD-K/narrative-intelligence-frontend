@@ -39,6 +39,29 @@ marker renders inside a word and reads as a bug.
 **Phase 4 action.** Optional. If spans were snapped to token boundaries server-side,
 the frontend adjustment could be deleted.
 
+### 3. Two score scales, indistinguishable from the value
+
+**Observed.** Most scores are `0..1` (`bot_score`, `anomalous_score`,
+`toxicity_score`, `coordination_score`, `bot_like_share`, and the six
+`NarrativeScorecard` signals). Three are `0..100`: `AuthorOut.risk_score`,
+`DomainOut.risk_score` and `NarrativeScorecard.fusion_score`.
+`HighRiskPost.risk_score` declares no range but returns `96.2`, so it is `0..100`
+too. `AuthorScoreExplanation.risk_score` likewise declares no range and shares
+`AuthorOut`'s scale.
+
+**UI behaviour.** `ScoreCell` takes a required `scale` prop (`"unit"` or
+`"hundred"`), so a new call site has to look the field up in the contract rather
+than guess. `riskLevel.ts` exposes `riskLevelFromScore` and `riskLevelFrom100`
+separately and never infers the scale from the value — on a `0..100` scale, `0.4`
+is a very low risk, not a medium one. Guarded by `riskLevel.test.ts`.
+
+This was caught only by running against real data: `risk_score: 33.2` rendered as
+`3320%`.
+
+**Phase 4 action.** Declare `minimum`/`maximum` on `HighRiskPost.risk_score` and
+`AuthorScoreExplanation.risk_score` so the scale is discoverable from the schema
+rather than from a sample response.
+
 ---
 
 ## Gaps — data a screen wanted and no route provides

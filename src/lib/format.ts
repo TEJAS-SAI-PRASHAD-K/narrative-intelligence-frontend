@@ -28,10 +28,23 @@ export function formatExactCount(value: number | null | undefined): string {
   return isMeasured(value) ? plain.format(value) : NOT_MEASURED;
 }
 
-/** A 0..1 model score as a percentage. 0 is a real score; null is not. */
+/**
+ * A 0..1 model score as a percentage. 0 is a real score; null is not.
+ *
+ * Only for fields the contract declares as 0..1. The composite risk numbers
+ * (`AuthorOut.risk_score`, `DomainOut.risk_score`, `NarrativeScorecard.fusion_score`)
+ * are 0..100 and must use `formatScore100` -- passing one of those here renders
+ * "3320%".
+ */
 export function formatScore(value: number | null | undefined, digits = 0): string {
   if (!isMeasured(value)) return NOT_MEASURED;
   return `${(value * 100).toFixed(digits)}%`;
+}
+
+/** A 0..100 composite risk score, shown on its own scale rather than as a percentage. */
+export function formatScore100(value: number | null | undefined, digits = 1): string {
+  if (!isMeasured(value)) return NOT_MEASURED;
+  return value.toFixed(digits);
 }
 
 /** A value already expressed as a percentage (`pct`, `share_pct`, `delta_pct`). */

@@ -1,16 +1,40 @@
 /**
- * The shared risk banding. Lives apart from the component so pages, table cells and
- * chart series can all map a raw score onto the same four levels without importing a
- * React component to do it.
+ * The shared risk banding.
+ *
+ * The contract uses two score scales and mixing them up silently multiplies a number
+ * by a hundred, so they are separated here by name rather than inferred:
+ *
+ *   0..1   — every model score: `bot_score`, `anomalous_score`, `toxicity_score`,
+ *            `coordination_score`, `bot_like_share`, `NarrativeScorecard.bot_like`,
+ *            `.anomalous`, `.toxicity`, `.negative_sentiment`, `Citation` confidences.
+ *   0..100 — the composite risk numbers: `AuthorOut.risk_score`,
+ *            `DomainOut.risk_score`, `NarrativeScorecard.fusion_score`.
+ *
+ * Use `*FromUnit` for the first group and `*From100` for the second. Nothing infers
+ * the scale from the value: a 0..100 score that happens to be 0.4 is a very low risk,
+ * not a medium one.
  */
 export type RiskLevel = 'high' | 'medium' | 'low' | 'none';
 
-/** `null` maps to `none`, never to `low`. An unmeasured signal is not a safe signal. */
+const HIGH = 0.66;
+const MEDIUM = 0.33;
+
+function band(fraction: number): RiskLevel {
+  if (fraction >= HIGH) return 'high';
+  if (fraction >= MEDIUM) return 'medium';
+  return 'low';
+}
+
+/** For 0..1 model scores. `null` maps to `none`, never to `low`. */
 export function riskLevelFromScore(value: number | null | undefined): RiskLevel {
   if (value === null || value === undefined || !Number.isFinite(value)) return 'none';
-  if (value >= 0.66) return 'high';
-  if (value >= 0.33) return 'medium';
-  return 'low';
+  return band(value);
+}
+
+/** For 0..100 composites (`risk_score`, `fusion_score`). */
+export function riskLevelFrom100(value: number | null | undefined): RiskLevel {
+  if (value === null || value === undefined || !Number.isFinite(value)) return 'none';
+  return band(value / 100);
 }
 
 export function riskLevelFromBand(band: string | null | undefined): RiskLevel {
