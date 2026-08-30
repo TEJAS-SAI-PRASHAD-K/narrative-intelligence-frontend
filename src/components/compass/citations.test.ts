@@ -74,6 +74,40 @@ describe('segmentContext', () => {
   });
 });
 
+describe('word-boundary snapping', () => {
+  const REAL = 'Analysts should treat the screenshot as unverified rather than as evidence.';
+
+  it('extends a span that ends mid-word out to the end of that word', () => {
+    // The backend truncates at a character budget, so spans routinely land inside a
+    // word. Marking that literally puts a superscript inside the word.
+    const cutInsideUnverified = REAL.indexOf('unverified') + 5;
+    const { segments } = segmentContext(REAL, [cite('a', 0, cutInsideUnverified)]);
+    expect(segments[0]?.text).toBe('Analysts should treat the screenshot as unverified');
+    expect(segments.map((s) => s.text).join('')).toBe(REAL);
+  });
+
+  it('extends a span that starts mid-word back to the start of that word', () => {
+    const start = REAL.indexOf('screenshot') + 4;
+    const { segments } = segmentContext(REAL, [cite('a', start, REAL.length)]);
+    const cited = segments.find((s) => s.citations.length === 1);
+    expect(cited?.text.startsWith('screenshot')).toBe(true);
+  });
+
+  it('leaves an already word-aligned span exactly where it is', () => {
+    const end = REAL.indexOf('unverified') + 'unverified'.length;
+    const { segments } = segmentContext(REAL, [cite('a', 0, end)]);
+    expect(segments[0]?.text).toBe(REAL.slice(0, end));
+  });
+
+  it('never loses or duplicates characters after snapping', () => {
+    const { segments } = segmentContext(REAL, [
+      cite('a', 3, 17),
+      cite('b', 20, 41),
+    ]);
+    expect(segments.map((s) => s.text).join('')).toBe(REAL);
+  });
+});
+
 describe('citationNumbers', () => {
   it('numbers citations from 1 in returned order', () => {
     const map = citationNumbers([cite('a', 0, 1), cite('b', 1, 2)]);

@@ -7,6 +7,34 @@ export interface ContextSegment {
 }
 
 /**
+ * Expands a span to whole words.
+ *
+ * The backend's spans are byte-accurate but not word-aligned -- they are produced by
+ * a character budget, so a span routinely ends mid-word ("...as unver|ified"). Marking
+ * that literally puts a superscript inside a word, which reads as a rendering bug and
+ * makes the sentence harder to read, without telling the analyst anything true: a
+ * source supports a claim at sentence granularity, not at character 245.
+ *
+ * So boundaries are widened outward to the enclosing word for *display only*. The
+ * adjustment is at most one partial word at each end and cannot change which sentence
+ * a citation is attached to. Nothing else about the span is altered, and the raw
+ * `char_start`/`char_end` are never rewritten in the data.
+ */
+function snapToWords(context: string, start: number, end: number): [number, number] {
+  const isWord = (i: number) => i >= 0 && i < context.length && /\S/.test(context[i] as string);
+
+  let s = Math.max(0, Math.min(start, context.length));
+  let e = Math.max(0, Math.min(end, context.length));
+
+  // Walk the start back to the beginning of the word it landed inside.
+  while (s > 0 && isWord(s) && isWord(s - 1)) s -= 1;
+  // Walk the end forward to the end of the word it landed inside.
+  while (e < context.length && isWord(e) && isWord(e - 1)) e += 1;
+
+  return [s, e];
+}
+
+/**
  * Splits `context` into segments by citation character spans.
  *
  * The backend returns `char_start`/`char_end` precisely so citations can be rendered
@@ -37,11 +65,18 @@ export function segmentContext(
     return { segments: [{ text: context, citations: [] }], unanchored };
   }
 
-  // Every span boundary, clamped into the string, deduplicated and ordered.
+  // Word-aligned span per citation, then every boundary, deduplicated and ordered.
+  const spans = new Map<string, [number, number]>(
+    anchored.map((c) => [
+      c.id,
+      snapToWords(context, c.char_start as number, c.char_end as number),
+    ]),
+  );
+
   const boundaries = new Set<number>([0, context.length]);
-  for (const c of anchored) {
-    boundaries.add(Math.max(0, c.char_start as number));
-    boundaries.add(Math.min(context.length, c.char_end as number));
+  for (const [start, end] of spans.values()) {
+    boundaries.add(start);
+    boundaries.add(end);
   }
   const points = [...boundaries].sort((a, b) => a - b);
 
@@ -52,9 +87,10 @@ export function segmentContext(
     if (end <= start) continue;
     segments.push({
       text: context.slice(start, end),
-      citations: anchored.filter(
-        (c) => (c.char_start as number) <= start && (c.char_end as number) >= end,
-      ),
+      citations: anchored.filter((c) => {
+        const span = spans.get(c.id);
+        return span !== undefined && span[0] <= start && span[1] >= end;
+      }),
     });
   }
 
