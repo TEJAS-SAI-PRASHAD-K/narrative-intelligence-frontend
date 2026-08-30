@@ -17,7 +17,7 @@
     "gen:api": "openapi-typescript openapi.json -o src/api/schema.d.ts",
     "gen:api:check": "pnpm gen:api && git diff --exit-code --stat -- src/api/schema.d.ts",
     "sync:contract": "cp ../narrative-intelligence/openapi.json ./openapi.json && pnpm gen:api",
-    "ci": "pnpm gen:api:check && pnpm typecheck && pnpm lint && pnpm test"
+    "verify": "pnpm gen:api:check && pnpm typecheck && pnpm lint && pnpm test"
   },
   "dependencies": {
     "@radix-ui/react-accordion": "^1.2.20",

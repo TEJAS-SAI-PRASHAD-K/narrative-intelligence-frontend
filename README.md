@@ -49,7 +49,7 @@ the `read` scope into `VITE_API_KEY`.
 | `pnpm typecheck` | `tsc -b --noEmit`, strict |
 | `pnpm lint` | ESLint, zero warnings tolerated |
 | `pnpm test` | Vitest |
-| `pnpm ci` | All four, in the order CI runs them |
+| `pnpm verify` | All four, in the order CI runs them (`ci` is reserved by pnpm) |
 | `pnpm sync:contract` | Copy `openapi.json` from the sibling backend repo and regenerate |
 
 ---
