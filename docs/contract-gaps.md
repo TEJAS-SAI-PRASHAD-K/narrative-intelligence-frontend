@@ -62,6 +62,35 @@ This was caught only by running against real data: `risk_score: 33.2` rendered a
 `AuthorScoreExplanation.risk_score` so the scale is discoverable from the schema
 rather than from a sample response.
 
+### 4. `GraphResponse.layout` decides who positions the nodes
+
+**Observed.** `layout` is documented as "Layout algorithm, or `'client'` when small
+enough to lay out live". With `layout: "client"` the response still carries `x`/`y`,
+but they are a seed ring, not a result — rendering them as given draws a perfect
+circle that looks like structure and encodes none.
+
+**UI behaviour.** `buildGraph` treats `layout === "client"` as "needs layout" even
+when coordinates are present, and runs ForceAtlas2 in the browser seeded from those
+coordinates — but only below `CLIENT_LAYOUT_MAX_NODES` (2,000). Above that it enqueues
+`POST /network/layout` and waits, with the job in the tray. There is no silent
+fallback: a ForceAtlas2 pass over 20,000 nodes locks the main thread long enough to be
+indistinguishable from a crash.
+
+**Phase 4 action.** None required.
+
+### 5. WebGL cannot read the app's colour tokens
+
+**Observed.** Not a contract issue, recorded because it is the kind of failure that
+looks like a data problem. Sigma parses colours with its own parser, which accepts hex
+and `rgb()`/`rgba()` but not the space-separated `hsl(H S% L% / A)` form the design
+tokens use. Anything it cannot parse renders black — the first working graph drew as
+a solid dark disc.
+
+**UI behaviour.** `src/lib/tokens.ts` resolves a token against the live computed style
+and converts it to `rgba()`, cached per token and alpha, with a visible grey fallback
+so a bad token name reads as "wrong colour" rather than "node missing". Pinned by
+`tokens.test.ts`.
+
 ---
 
 ## Gaps — data a screen wanted and no route provides
