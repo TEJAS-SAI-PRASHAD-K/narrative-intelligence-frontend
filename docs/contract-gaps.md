@@ -7,6 +7,9 @@ implied, is written down here instead of being worked around silently.
 Each entry says what was observed, what the UI does now, and what Phase 4 would need
 to change for the workaround to go away.
 
+Entries are numbered in one continuous sequence (observations 1-6, gaps 7-11); code
+comments reference them as `contract-gaps #N`.
+
 ---
 
 ## Observations — live responses that differed from the written notes
@@ -117,7 +120,7 @@ as a frontend bug.
 
 ## Gaps — data a screen wanted and no route provides
 
-### 3. No route resolves a cohort id to a name outside a list response
+### 7. No route resolves a cohort id to a name outside a list response
 
 **Wanted.** The filter bar renders a removable chip per active filter. For
 `cohort_id`, `narrative_id` and `author_group_id` the chip should read
@@ -134,7 +137,7 @@ render the raw id. No extra request is issued purely to decorate a chip.
 **Phase 4 action.** A `GET /cohorts/{id}` (and equivalents), or an `ids` filter on the
 existing list routes, would let every chip render a name on every page.
 
-### 4. `GET /drivers/*` returns no pagination cursor
+### 8. `GET /drivers/*` returns no pagination cursor
 
 **Wanted.** The drivers tables are the densest lists in the product and an analyst
 will want more than one page of them.
@@ -149,7 +152,7 @@ No client-side paging is faked.
 **Phase 4 action.** Return the standard `PageResponse` envelope from
 `/drivers/authors|hashtags|urls`.
 
-### 5. No route lists an author's cohorts or narratives by id
+### 9. No route lists an author's cohorts or narratives by id
 
 **Wanted.** The author slide-over shows cohort chips and the narratives an author
 touched.
@@ -164,7 +167,28 @@ resolving each to a title would take one request per narrative.
 **Phase 4 action.** Include narrative titles alongside ids, as `ComparisonOut` already
 does with `narrative_titles`.
 
-### 6. `GET /media/checks` is not project-scoped
+### 10. No route reports the current key's scopes
+
+**Wanted.** Phase 5's brief asks for "scopes reflected in disabled controls" — a
+read-only key should see **Update Now**, **Regenerate** and **Export** greyed out rather
+than discovering the limit by clicking.
+
+**Available.** Nothing. There is no `/me`, `/whoami` or token-introspection route, and
+`GET /keys` requires the `admin` scope, so a `read`-only key cannot enumerate its own
+permissions. A client can only learn its scopes by attempting an action and reading the
+`403`.
+
+**UI behaviour.** Mutating controls stay enabled and a missing scope surfaces on use.
+`ErrorState` renders the backend's own message verbatim — it already names the scopes
+held and the scope required (*"This API key has scopes ['read', 'write'] and needs
+'admin'"*) — alongside the `code` and `request_id`. Nothing is pre-disabled on a guess,
+because guessing wrong in the permissive direction is confusing and guessing wrong in
+the restrictive direction hides functionality the analyst actually has.
+
+**Phase 4 action.** A `GET /keys/self` returning `{prefix, scopes}` for the presented
+key would make the requirement implementable in about ten lines.
+
+### 11. `GET /media/checks` is not project-scoped
 
 **Observed.** Every other list route requires `project_id`. `/media/checks` accepts
 only `cursor` and `limit`, so the media history is global rather than per project.

@@ -118,7 +118,7 @@ export default function MediaPage() {
         <h2 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
           History
         </h2>
-        {/* The endpoint is not project-scoped (contract-gaps #6); say so. */}
+        {/* The endpoint is not project-scoped (contract-gaps #11); say so. */}
         <p className="text-2xs text-muted-foreground">
           Media checks are account-wide, not scoped to this project.
         </p>

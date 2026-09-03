@@ -25,7 +25,7 @@ const KINDS: { value: DriverKind; label: string }[] = [
 /**
  * 4.5 Conversation Drivers. Three tabs over one table and one FilterSpec.
  *
- * `DriversResponse` carries no `next_cursor` (see docs/contract-gaps.md #4), so the
+ * `DriversResponse` carries no `next_cursor` (see docs/contract-gaps.md #8), so the
  * page requests one page at the contract maximum and says so in the footer rather
  * than implying the list is complete.
  */
@@ -108,7 +108,7 @@ export default function DriversPage() {
                 <p className="text-2xs text-muted-foreground">
                   Showing the first {PAGE_LIMIT} rows — the drivers endpoint returns no
                   pagination cursor, so this is not necessarily the complete set. Narrow the
-                  filters to be sure you are seeing everything. (contract-gaps #4)
+                  filters to be sure you are seeing everything. (contract-gaps #8)
                 </p>
               ) : (
                 <p className="text-2xs text-muted-foreground">

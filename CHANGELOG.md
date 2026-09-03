@@ -110,6 +110,14 @@ the scrubber printing a bucket's own activity beside a cumulative canvas.
 - No deployment, no auth system, no websockets, no light theme, no i18n — all Phase 6 or
   explicitly out of scope.
 
+### Known gap
+
+- **Scopes are not reflected in disabled controls**, which Phase 5's brief asks for. The
+  contract exposes no way for a client to read its own key's scopes — there is no
+  introspection route and `GET /keys` itself needs `admin` — so a missing scope surfaces
+  on use instead, as an `ErrorState` quoting the backend's message naming the scopes held
+  and the scope required. Recorded as `docs/contract-gaps.md` #10.
+
 ### Known constraint
 
 `VITE_API_KEY` is inlined into the bundle by Vite. This is documented in the README as a

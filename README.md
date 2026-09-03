@@ -12,17 +12,7 @@ Recharts · Sigma.js + graphology · Zod.
 
 ## Run it
 
-Needs Node 20+ and pnpm. Nothing else — no database, no Docker.
-
-**1. Start a Phase 4 backend in demo mode** (from the backend repo):
-
-```bash
-DEMO_MODE=1 .venv/bin/uvicorn app.main:app --port 8001
-```
-
-All 69 routes, served from fixtures, with stable ids and no API key required.
-
-**2. Start the dashboard:**
+Needs Node 20+ and pnpm.
 
 ```bash
 pnpm install
@@ -31,10 +21,68 @@ pnpm gen:api
 pnpm dev
 ```
 
-Then open <http://localhost:5173>.
+Then open <http://localhost:5173>. Which backend it talks to is set by `.env.local`.
 
-Against a real (non-demo) backend, point `VITE_API_BASE_URL` at it and paste a key with
-the `read` scope into `VITE_API_KEY`.
+### Choosing a backend
+
+**A — `DEMO_MODE=1` fixtures.** No database, no Docker, no key. Every one of the 69
+routes answers with schema-valid data and stable ids. This is what the dashboard was
+built against and what `docs/demo.md` assumes.
+
+```bash
+cd ../narrative-intelligence
+DEMO_MODE=1 .venv/bin/uvicorn app.main:app --port 8001
+```
+
+```
+VITE_API_BASE_URL=http://localhost:8001
+VITE_API_KEY=demo-mode-needs-no-key
+```
+
+Demo mode is **read-only**: writes return `200` with the row unchanged. The UI reports
+that honestly rather than pretending — a rename is held on screen with an "accepted but
+not yet visible" notice instead of silently reverting.
+
+**B — the real backend.** Real corpus, real Celery jobs, real scores.
+
+```bash
+cd ../narrative-intelligence
+make up          # api + worker + beat + db + redis, api on :8000
+```
+
+```
+VITE_API_BASE_URL=http://localhost:8000
+VITE_API_KEY=<a real key>
+```
+
+Mint a key if you do not already hold one — it is shown **once**, so copy it
+immediately:
+
+```bash
+docker compose exec api python -m app.cli bootstrap-key
+```
+
+It refuses if an active key already exists; add `--force` to mint another. Scopes:
+`read` for every screen, `write` for reclustering / reports / enrichment, `admin` for
+`/settings/keys`.
+
+Controls are **not** pre-disabled by scope: the contract exposes no way for a client to
+read its own key's scopes (there is no introspection route, and `GET /keys` itself needs
+`admin`). A missing scope therefore surfaces on use, as an `ErrorState` quoting the
+backend's own message — e.g. *"This API key has scopes ['read', 'write'] and needs
+'admin'"* — with the `code` and `request_id`. See `docs/contract-gaps.md` #10.
+
+### What differs on the real backend
+
+Read from `/readyz` at runtime; the Sources page renders it under **Model
+capabilities**. On a stock local stack:
+
+| | |
+|---|---|
+| Compass Context | **Unavailable** without `ANTHROPIC_API_KEY`. Narrative detail shows the explicit "no context generated yet" state, not an error. |
+| Narrative titles | Fall back to centroid keywords, with provenance `heuristic` — the pill reads "Derived by a rule, not a model". |
+| `/posts/similar` | Accepts `post_id` but not raw `text` without an embedding checkpoint mounted. |
+| Jobs | **Actually run.** "Update Now" really reclusters and renumbers narratives; reports really render. |
 
 ---
 

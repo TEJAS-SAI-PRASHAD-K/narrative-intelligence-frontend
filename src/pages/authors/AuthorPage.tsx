@@ -129,7 +129,7 @@ export default function AuthorPage() {
           <h2 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
             Narratives touched
           </h2>
-          {/* Ids only -- the contract returns no titles here (contract-gaps #5). */}
+          {/* Ids only -- the contract returns no titles here (contract-gaps #9). */}
           <ul className="flex flex-wrap gap-1.5">
             {a.narratives_touched?.map((id) => (
               <li key={id}>
