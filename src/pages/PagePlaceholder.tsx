@@ -2,16 +2,16 @@ import { Construction } from 'lucide-react';
 import { EmptyState } from '@/components/states';
 
 /**
- * Route skeleton only. Build step 3 wires every route so navigation and code-splitting
- * are real from the start; each page replaces this at its own numbered step.
+ * Stands in for a screen that is routed but not built. Currently unused: every route
+ * in `App.tsx` now renders a real page.
  */
-export function PagePlaceholder({ name, step }: { name: string; step: string }) {
+export function PagePlaceholder({ name }: { name: string }) {
   return (
-    <div className="p-4">
+    <div className="px-4 py-5 lg:px-6">
       <EmptyState
         icon={<Construction className="h-6 w-6" />}
         title={name}
-        description={`Route is wired and code-split. The screen itself lands in build step ${step}.`}
+        description="This screen is not built yet. Nothing is wrong with your filters — there is simply nothing here to show."
       />
     </div>
   );

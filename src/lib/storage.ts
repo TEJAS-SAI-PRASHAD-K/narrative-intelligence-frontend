@@ -36,5 +36,6 @@ export function removeLocal(key: string): void {
 export const STORAGE_KEYS = {
   lastProjectSlug: 'last-project-slug',
   kpiStripCollapsed: 'kpi-strip-collapsed',
+  sidebarCollapsed: 'sidebar-collapsed',
   columns: (table: string) => `columns:${table}`,
 } as const;

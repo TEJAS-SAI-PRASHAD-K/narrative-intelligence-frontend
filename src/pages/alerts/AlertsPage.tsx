@@ -10,6 +10,7 @@ import {
   useUpdateAlertRule,
 } from '@/api/queries/ops';
 import type { AlertCondition, AlertOut, AlertRuleOut } from '@/api/types';
+import { PageShell } from '@/components/page';
 import { EmptyState, ErrorState, SkeletonCard } from '@/components/states';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -79,9 +80,11 @@ export default function AlertsPage() {
   }
 
   return (
-    <div className="space-y-3 p-4">
-      <h1 className="text-sm font-semibold">Alerts</h1>
-
+    <PageShell
+      title="Alerts"
+      description="Rules that watch this project for you, and everything they have flagged. A rule fires when the condition you set holds — it does not act on its own."
+      bodyClassName="gap-4"
+    >
       <Tabs defaultValue="fired">
         <TabsList>
           <TabsTrigger value="fired">Fired alerts</TabsTrigger>
@@ -104,7 +107,7 @@ export default function AlertsPage() {
             {(alerts.data?.items ?? []).map((alert) => (
               <li
                 key={alert.id}
-                className="flex flex-wrap items-start gap-x-3 gap-y-1.5 rounded-lg border border-border bg-card p-3"
+                className="flex flex-wrap items-start gap-x-3 gap-y-1.5 card-surface p-4"
               >
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -152,14 +155,17 @@ export default function AlertsPage() {
             <ErrorState error={rules.error} onRetry={() => void rules.refetch()} />
           )}
           {!rules.isLoading && (rules.data?.items.length ?? 0) === 0 && !rules.error && (
-            <EmptyState title="No alert rules" description="A rule fires when a metric crosses a threshold." />
+            <EmptyState
+              title="No alert rules"
+              description="A rule fires when a metric crosses a threshold."
+            />
           )}
 
           <ul className="space-y-2">
             {(rules.data?.items ?? []).map((rule: AlertRuleOut) => (
               <li
                 key={rule.id}
-                className="flex flex-wrap items-start gap-x-3 gap-y-1.5 rounded-lg border border-border bg-card p-3"
+                className="flex flex-wrap items-start gap-x-3 gap-y-1.5 card-surface p-4"
               >
                 <div className="min-w-0 flex-1 space-y-1">
                   <div className="flex flex-wrap items-center gap-2">
@@ -209,7 +215,7 @@ export default function AlertsPage() {
       </Tabs>
 
       <RuleDialog open={ruleDialogOpen} onOpenChange={setRuleDialogOpen} projectId={projectId} />
-    </div>
+    </PageShell>
   );
 }
 
@@ -369,7 +375,10 @@ function RuleDialog({
                       )
                     }
                   />
-                  <Label htmlFor={`channel-${c}`} className="cursor-pointer normal-case tracking-normal">
+                  <Label
+                    htmlFor={`channel-${c}`}
+                    className="cursor-pointer normal-case tracking-normal"
+                  >
                     {humanizeEnum(c)}
                   </Label>
                 </div>

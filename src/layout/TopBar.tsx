@@ -1,12 +1,10 @@
-import { ChevronDown, KeyRound, Settings, User } from 'lucide-react';
+import { ChevronDown, Menu, Radar, Settings, User, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import { useNarrativeFeed } from '@/api/queries/narratives';
 import type { ProjectOut } from '@/api/types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
-  DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -14,61 +12,78 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { emptyFilterSpec, type FilterSpec } from '@/lib/filters';
-import { platformLabel, truncate } from '@/lib/format';
+import { activeChips, removeChip, type FilterSpec } from '@/lib/filters';
 import { STORAGE_KEYS, writeLocal } from '@/lib/storage';
 
-const PLATFORMS = ['reddit', 'mastodon', 'news', 'gdelt', 'youtube'] as const;
-
 /**
- * Project · platform · narrative · settings · avatar. Platform and narrative write
- * straight to the URL like every other filter -- the top bar owns no state.
+ * Identity and scope: what product this is, which project you are in, and what is
+ * currently filtering the view.
+ *
+ * It used to carry three permanently-open dropdowns -- project, platform, narrative --
+ * so the API keys page offered a Platform picker that filtered nothing, and the filter
+ * set was split across two places. Platform and narrative moved into `AdvancedFilters`
+ * with every other filter; what stays here is the summary of what is in force, as
+ * removable chips.
+ *
+ * The bar owns no state. Chips are derived from the `FilterSpec` and removal writes the
+ * URL, exactly as the filter bar does.
  */
 export function TopBar({
   project,
   projects,
   filters,
   onFiltersChange,
+  onOpenNav,
 }: {
   project: ProjectOut | undefined;
   projects: ProjectOut[];
   filters: FilterSpec;
   onFiltersChange: (next: FilterSpec) => void;
+  /** Opens the navigation sheet on viewports too narrow for the sidebar. */
+  onOpenNav: () => void;
 }) {
   const navigate = useNavigate();
-  const selectedPlatforms = filters.platform ?? [];
-  const selectedNarratives = filters.narrative_id ?? [];
-
-  // A short, top-priority slice purely to name the narratives in the picker. The full
-  // feed lives on its own page; this never paginates.
-  const narrativeOptions = useNarrativeFeed(
-    { ...emptyFilterSpec(filters.project_id), tz: filters.tz },
-    { sort: 'priority', limit: 25 },
-  );
-  const narratives = narrativeOptions.data?.pages[0]?.items ?? [];
-
-  function togglePlatform(platform: string) {
-    const next = selectedPlatforms.includes(platform)
-      ? selectedPlatforms.filter((p) => p !== platform)
-      : [...selectedPlatforms, platform];
-    onFiltersChange({ ...filters, platform: next.length > 0 ? next : undefined });
-  }
-
-  function toggleNarrative(id: string) {
-    const next = selectedNarratives.includes(id)
-      ? selectedNarratives.filter((n) => n !== id)
-      : [...selectedNarratives, id];
-    onFiltersChange({ ...filters, narrative_id: next.length > 0 ? next : undefined });
-  }
+  const chips = activeChips(filters);
 
   return (
-    <header className="flex h-11 shrink-0 items-center gap-2 border-b border-border bg-surface px-3">
-      <span className="mr-1 text-xs font-semibold tracking-tight">Narrative Intelligence</span>
+    <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border bg-surface px-3 shadow-card">
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Open navigation"
+        onClick={onOpenNav}
+        className="lg:hidden"
+      >
+        <Menu className="h-4 w-4" aria-hidden="true" />
+      </Button>
+
+      {/* Brand mark. A product with a name and no mark reads as an internal tool. */}
+      <div className="flex shrink-0 items-center gap-2.5 pl-1">
+        <span
+          aria-hidden="true"
+          className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary/15 ring-1 ring-inset ring-primary/30"
+        >
+          <Radar className="h-4 w-4 text-primary" />
+        </span>
+        <span className="hidden text-sm font-semibold tracking-tight sm:block">
+          Narrative Intelligence
+        </span>
+      </div>
+
+      <span className="h-5 w-px shrink-0 bg-border" aria-hidden="true" />
 
       {/* Project selector */}
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="h-8 shrink-0 gap-2 rounded-lg border border-border bg-surface-raised px-2.5 hover:border-border-strong"
+          >
+            <span
+              aria-hidden="true"
+              className="h-1.5 w-1.5 shrink-0 rounded-full bg-risk-low"
+            />
             <span className="max-w-[14rem] truncate">{project?.name ?? 'Select project'}</span>
             <ChevronDown className="h-3 w-3 opacity-60" aria-hidden="true" />
           </Button>
@@ -86,7 +101,9 @@ export function TopBar({
               }}
             >
               <span className="truncate">{p.name}</span>
-              {p.id === project?.id && <span className="ml-auto text-2xs text-primary">current</span>}
+              {p.id === project?.id && (
+                <span className="ml-auto pl-3 text-2xs text-primary">current</span>
+              )}
             </DropdownMenuItem>
           ))}
           <DropdownMenuSeparator />
@@ -94,93 +111,9 @@ export function TopBar({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      {/* Platform filter */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5">
-            Platform
-            {selectedPlatforms.length > 0 && (
-              <Badge variant="default" className="ml-0.5">
-                {selectedPlatforms.length}
-              </Badge>
-            )}
-            <ChevronDown className="h-3 w-3 opacity-60" aria-hidden="true" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent>
-          <DropdownMenuLabel>Platforms</DropdownMenuLabel>
-          {PLATFORMS.map((p) => (
-            <DropdownMenuCheckboxItem
-              key={p}
-              checked={selectedPlatforms.includes(p)}
-              onCheckedChange={() => togglePlatform(p)}
-              onSelect={(e) => e.preventDefault()}
-            >
-              {platformLabel(p)}
-            </DropdownMenuCheckboxItem>
-          ))}
-        </DropdownMenuContent>
-      </DropdownMenu>
-
-      {/* Narrative filter -- also what puts Overview into narrative-scoped mode. */}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" size="sm" className="gap-1.5">
-            Narrative
-            {selectedNarratives.length > 0 && (
-              <Badge variant="default" className="ml-0.5">
-                {selectedNarratives.length}
-              </Badge>
-            )}
-            <ChevronDown className="h-3 w-3 opacity-60" aria-hidden="true" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="max-h-96 w-80 overflow-y-auto">
-          <DropdownMenuLabel>Narratives (top 25 by priority)</DropdownMenuLabel>
-          {narrativeOptions.isLoading && (
-            <p className="px-2 py-1.5 text-2xs text-muted-foreground">Loading…</p>
-          )}
-          {!narrativeOptions.isLoading && narratives.length === 0 && (
-            <p className="px-2 py-1.5 text-2xs text-muted-foreground">
-              No narratives in this project yet.
-            </p>
-          )}
-          {narratives.map((n) => (
-            <DropdownMenuCheckboxItem
-              key={n.id}
-              checked={selectedNarratives.includes(n.id)}
-              onCheckedChange={() => toggleNarrative(n.id)}
-              onSelect={(e) => e.preventDefault()}
-            >
-              <span className="mr-1.5 font-mono text-2xs text-muted-foreground">
-                #{n.display_id}
-              </span>
-              {truncate(n.title.text ?? 'Untitled narrative', 48)}
-            </DropdownMenuCheckboxItem>
-          ))}
-          {selectedNarratives.length > 0 && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={() => onFiltersChange({ ...filters, narrative_id: undefined })}
-              >
-                Clear narrative filter
-              </DropdownMenuItem>
-            </>
-          )}
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <FilterSummary chips={chips} filters={filters} onFiltersChange={onFiltersChange} />
 
       <div className="flex-1" />
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button variant="ghost" size="icon" aria-label="API keys" onClick={() => navigate('/settings/keys')}>
-            <KeyRound className="h-4 w-4" aria-hidden="true" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>API keys</TooltipContent>
-      </Tooltip>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
@@ -198,10 +131,14 @@ export function TopBar({
               Alerts and rules
             </DropdownMenuItem>
           )}
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onSelect={() => navigate('/kitchen-sink')}>
-            Component kitchen sink
-          </DropdownMenuItem>
+          {import.meta.env.DEV && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onSelect={() => navigate('/kitchen-sink')}>
+                Component kitchen sink
+              </DropdownMenuItem>
+            </>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
@@ -209,15 +146,79 @@ export function TopBar({
         <TooltipTrigger asChild>
           <span
             aria-label="Signed in via API key"
-            className="flex h-6 w-6 items-center justify-center rounded-full bg-secondary"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-primary/30 to-ai/25 ring-1 ring-inset ring-border-strong"
           >
-            <User className="h-3.5 w-3.5 text-secondary-foreground" aria-hidden="true" />
+            <User className="h-4 w-4 text-foreground/80" aria-hidden="true" />
           </span>
         </TooltipTrigger>
         <TooltipContent>
-          Authenticated by <code>X-API-Key</code>. Phase 5 has no user accounts.
+          You are identified by the API key this browser is configured with. There are no user
+          accounts in this build.
         </TooltipContent>
       </Tooltip>
     </header>
+  );
+}
+
+/**
+ * What is filtering the view right now, and one click to drop any of it. Only rendered
+ * when something is actually in force -- an empty rail of controls that do nothing is
+ * what made the old bar read as chrome.
+ */
+function FilterSummary({
+  chips,
+  filters,
+  onFiltersChange,
+}: {
+  chips: ReturnType<typeof activeChips>;
+  filters: FilterSpec;
+  onFiltersChange: (next: FilterSpec) => void;
+}) {
+  if (chips.length === 0) return null;
+
+  // Three fit comfortably beside the project name; the rest are counted, and the full
+  // set is always visible on the page's own filter bar.
+  const shown = chips.slice(0, 3);
+  const overflow = chips.length - shown.length;
+
+  return (
+    <div className="flex min-w-0 items-center gap-1.5">
+      <span className="h-4 w-px shrink-0 bg-border" aria-hidden="true" />
+      <span className="sr-only">Active filters</span>
+      {shown.map((chip) => (
+        <Badge
+          key={`${chip.key}:${chip.value ?? ''}`}
+          variant="outline"
+          className="min-w-0 gap-1 py-1 pr-1"
+        >
+          <span className="truncate">{chip.label}</span>
+          <button
+            type="button"
+            onClick={() => onFiltersChange(removeChip(filters, chip))}
+            aria-label={`Remove filter ${chip.label}`}
+            className="shrink-0 rounded-sm p-0.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <X className="h-2.5 w-2.5" aria-hidden="true" />
+          </button>
+        </Badge>
+      ))}
+      {overflow > 0 && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Badge variant="muted" className="shrink-0 py-1">
+              +{overflow}
+            </Badge>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p className="mb-1 font-medium">Also filtering by</p>
+            <ul className="space-y-0.5">
+              {chips.slice(shown.length).map((chip) => (
+                <li key={`${chip.key}:${chip.value ?? ''}`}>{chip.label}</li>
+              ))}
+            </ul>
+          </TooltipContent>
+        </Tooltip>
+      )}
+    </div>
   );
 }

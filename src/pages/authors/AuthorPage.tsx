@@ -1,14 +1,25 @@
-import { ArrowLeft } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { useAuthor, useAuthorPosts, useAuthorScore, useAuthorTimeline } from '@/api/queries/entities';
+import {
+  useAuthor,
+  useAuthorPosts,
+  useAuthorScore,
+  useAuthorTimeline,
+} from '@/api/queries/entities';
 import { OriginalPost } from '@/components/post/OriginalPost';
 import { ScoreExplainer } from '@/components/score/ScoreExplainer';
+import { PageShell } from '@/components/page';
 import { EmptyState, ErrorState, SkeletonCard, SkeletonText } from '@/components/states';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useProjectContext } from '@/layout/useProjectContext';
-import { formatCount, formatDateTime, formatScore, humanizeEnum, platformLabel } from '@/lib/format';
+import {
+  formatCount,
+  formatDateTime,
+  formatScore,
+  humanizeEnum,
+  platformLabel,
+} from '@/lib/format';
 import { useFilters } from '@/lib/useFilters';
 import { AuthorStats } from './components/AuthorPanel';
 
@@ -29,7 +40,7 @@ export default function AuthorPage() {
 
   if (author.isLoading) {
     return (
-      <div className="space-y-3 p-4">
+      <div className="space-y-3 px-4 py-5 lg:px-6">
         <SkeletonText lines={3} />
         <SkeletonCard />
       </div>
@@ -38,7 +49,7 @@ export default function AuthorPage() {
 
   if (author.error) {
     return (
-      <div className="p-4">
+      <div className="px-4 py-5 lg:px-6">
         <ErrorState
           error={author.error}
           title="Could not load this author"
@@ -51,39 +62,39 @@ export default function AuthorPage() {
   const a = author.data;
   if (!a) {
     return (
-      <div className="p-4">
+      <div className="px-4 py-5 lg:px-6">
         <EmptyState title="Author not found" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="space-y-2">
-        <Link
-          to={`/p/${slug}/drivers`}
-          className="inline-flex items-center gap-1 rounded-sm text-xs text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <ArrowLeft className="h-3 w-3" aria-hidden="true" />
-          Conversation drivers
-        </Link>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-lg font-semibold">@{a.handle ?? a.author_id}</h1>
+    <PageShell
+      breadcrumb={[
+        { label: 'Drivers', to: `/p/${slug}/drivers` },
+        { label: `@${a.handle ?? a.author_id}` },
+      ]}
+      title={`@${a.handle ?? a.author_id}`}
+      description="One account: what it posts, how often, how it scored for bot-like and anomalous behaviour, and which narratives it appears in."
+      meta={
+        <>
           <Badge variant="muted">{platformLabel(a.source)}</Badge>
           {a.is_bot_flagged && <Badge variant="risk-high">Flagged bot-like</Badge>}
-          <div className="flex-1" />
-          <Button size="sm" variant="outline" onClick={() => setExplainerOpen(true)}>
-            Why this score?
-          </Button>
-        </div>
-        <p className="font-mono text-2xs text-muted-foreground">
-          author_id <span className="select-all">{a.author_id}</span>
-          {a.scoring_version ? ` · scoring ${a.scoring_version}` : ''}
-        </p>
-      </div>
+        </>
+      }
+      actions={
+        <Button size="sm" variant="outline" onClick={() => setExplainerOpen(true)}>
+          Why this score?
+        </Button>
+      }
+      bodyClassName="gap-4"
+    >
+      <p className="font-mono text-2xs text-muted-foreground">
+        author_id <span className="select-all">{a.author_id}</span>
+        {a.scoring_version ? ` · scoring ${a.scoring_version}` : ''}
+      </p>
 
-      <section className="rounded-lg border border-border bg-card p-3">
+      <section className="card-surface p-4">
         <AuthorStats author={a} tz={filters.tz} />
       </section>
 
@@ -152,15 +163,23 @@ export default function AuthorPage() {
         {timeline.isLoading && <SkeletonText lines={4} />}
         {Boolean(timeline.error) && <ErrorState error={timeline.error} compact />}
         {timeline.data && timeline.data.points.length > 0 && (
-          <div className="rounded-lg border border-border bg-card p-3">
+          <div className="card-surface p-4">
             <table className="w-full text-xs">
               <caption className="sr-only">Posting activity by bucket</caption>
               <thead>
                 <tr className="text-2xs uppercase tracking-wide text-muted-foreground">
-                  <th scope="col" className="py-1 text-left">Bucket</th>
-                  <th scope="col" className="py-1 text-right">Posts</th>
-                  <th scope="col" className="py-1 text-right">Engagement</th>
-                  <th scope="col" className="py-1 text-right">Mean toxicity</th>
+                  <th scope="col" className="py-1 text-left">
+                    Bucket
+                  </th>
+                  <th scope="col" className="py-1 text-right">
+                    Posts
+                  </th>
+                  <th scope="col" className="py-1 text-right">
+                    Engagement
+                  </th>
+                  <th scope="col" className="py-1 text-right">
+                    Mean toxicity
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -187,7 +206,9 @@ export default function AuthorPage() {
           Posts
         </h2>
         {posts.isLoading && <SkeletonCard />}
-        {Boolean(posts.error) && <ErrorState error={posts.error} onRetry={() => void posts.refetch()} />}
+        {Boolean(posts.error) && (
+          <ErrorState error={posts.error} onRetry={() => void posts.refetch()} />
+        )}
         {!posts.isLoading && (posts.data?.items.length ?? 0) === 0 && (
           <EmptyState title="No posts returned for this author" />
         )}
@@ -208,6 +229,6 @@ export default function AuthorPage() {
         error={score.error}
         subjectLabel={`@${a.handle ?? a.author_id}`}
       />
-    </div>
+    </PageShell>
   );
 }

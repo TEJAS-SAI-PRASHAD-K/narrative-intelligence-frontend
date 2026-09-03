@@ -1,17 +1,26 @@
+import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { hasApiKey } from '@/api/client';
 import { EmptyState, ErrorState, SkeletonCard } from '@/components/states';
 import { Button } from '@/components/ui/button';
-import { JobTray } from '@/jobs/JobTray';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
+import { JobsSheet } from '@/jobs/JobsSheet';
 import { useFilters } from '@/lib/useFilters';
-import { IconRail } from './IconRail';
+import { STORAGE_KEYS } from '@/lib/storage';
+import { useLocalState } from '@/lib/useLocalState';
+import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 import { useCurrentProject } from './useProject';
 
 /**
  * Shell for every route except the full-screen graph, which owns its own layout.
- * The filter hook is instantiated here so the top bar's platform and narrative
- * pickers write to the same URL the page below reads from -- one source, no mirror.
+ *
+ * The filter hook is instantiated here so the top bar's chips and the page below read
+ * from the same URL -- one source, no mirror.
+ *
+ * The sidebar rests as a 72px rail and floats its full panel over the page on hover;
+ * pinning it open makes it a normal flex child that the page lays out beside. Below `lg`
+ * there is room for neither, so the same nav renders in a sheet.
  */
 export function AppLayout() {
   const { slug, project, projectId, projects, isLoading, error, notFound } = useCurrentProject();
@@ -19,8 +28,14 @@ export function AppLayout() {
   const location = useLocation();
   const { filters, setFilters } = useFilters(projectId);
 
-  // Routes outside a project (/jobs, /settings/keys) still get the rail and top bar.
-  const railSlug = slug ?? projects[0]?.slug ?? '';
+  // Collapsed by default: the rail plus hover-reveal is the intended resting state, and
+  // pinning it open is the deliberate choice.
+  const [collapsed, setCollapsed] = useLocalState(STORAGE_KEYS.sidebarCollapsed, true);
+  const [navOpen, setNavOpen] = useState(false);
+  const [jobsOpen, setJobsOpen] = useState(false);
+
+  // Routes outside a project (/jobs, /settings/keys) still get the nav and top bar.
+  const navSlug = slug ?? projects[0]?.slug ?? '';
 
   return (
     <div className="flex h-screen flex-col overflow-hidden bg-background">
@@ -29,12 +44,34 @@ export function AppLayout() {
         projects={projects}
         filters={filters}
         onFiltersChange={setFilters}
+        onOpenNav={() => setNavOpen(true)}
       />
 
       <div className="flex min-h-0 flex-1">
-        <IconRail slug={railSlug} />
+        <div className="hidden lg:flex">
+          <Sidebar
+            slug={navSlug}
+            collapsed={collapsed}
+            onCollapsedChange={setCollapsed}
+            onOpenJobs={() => setJobsOpen(true)}
+          />
+        </div>
 
-        <main className="min-w-0 flex-1 overflow-y-auto" id="main-content">
+        {/* Under `lg` the same navigation, in a sheet. */}
+        <Sheet open={navOpen} onOpenChange={setNavOpen}>
+          <SheetContent side="left" className="w-56 p-0 sm:max-w-none">
+            <SheetTitle className="sr-only">Navigation</SheetTitle>
+            <Sidebar
+              slug={navSlug}
+              collapsed={false}
+              onCollapsedChange={() => setNavOpen(false)}
+              onOpenJobs={() => setJobsOpen(true)}
+              onNavigate={() => setNavOpen(false)}
+            />
+          </SheetContent>
+        </Sheet>
+
+        <main className="relative min-w-0 flex-1 overflow-y-auto" id="main-content">
           {!hasApiKey() && (
             <div
               role="status"
@@ -47,7 +84,7 @@ export function AppLayout() {
           )}
 
           {isLoading && !error && (
-            <div className="p-4">
+            <div className="p-6">
               <SkeletonCard />
             </div>
           )}
@@ -55,17 +92,17 @@ export function AppLayout() {
           {/* An error wins over the skeleton: a background refetch after a failure
               must not hide the failure behind a loading state. */}
           {Boolean(error) && (
-            <div className="p-4">
+            <div className="p-6">
               <ErrorState
                 error={error}
-                title="Could not load projects"
+                title="Could not load your projects"
                 onRetry={() => navigate(0)}
               />
             </div>
           )}
 
           {notFound && (
-            <div className="p-4">
+            <div className="p-6">
               <EmptyState
                 title={`No project with slug "${slug}"`}
                 description="It may have been renamed, or the link may point at a different backend."
@@ -90,7 +127,7 @@ export function AppLayout() {
         </main>
       </div>
 
-      <JobTray />
+      <JobsSheet open={jobsOpen} onOpenChange={setJobsOpen} />
     </div>
   );
 }

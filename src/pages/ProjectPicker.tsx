@@ -73,7 +73,7 @@ export default function ProjectPicker() {
         <EmptyState
           icon={<FolderOpen className="h-6 w-6" />}
           title="No projects yet"
-          description="Create one with the backend CLI, then reload this page. Phase 5 does not create projects for you."
+          description="Projects are created on the backend, not from this dashboard. Ask whoever runs it to add one, then reload."
         />
       )}
 
