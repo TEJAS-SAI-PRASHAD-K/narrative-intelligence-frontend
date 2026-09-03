@@ -66,7 +66,7 @@ export function TimeseriesChart({
   if (isLoading) return <SkeletonChart className={className} />;
   if (!response || rows.length === 0) {
     return (
-      <div className={cn('rounded-lg border border-border bg-card p-3', className)}>
+      <div className={cn('card-surface p-4', className)}>
         <ChartHeader title={title} response={response} />
         <EmptyState
           title="No points in this window"
@@ -81,7 +81,7 @@ export function TimeseriesChart({
   const tz = response.tz;
 
   return (
-    <div className={cn('rounded-lg border border-border bg-card p-3', className)}>
+    <div className={cn('card-surface p-4', className)}>
       <ChartHeader title={title} response={response} />
 
       <ResponsiveContainer width="100%" height={height}>

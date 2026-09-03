@@ -1,15 +1,11 @@
 import { Link2, X } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
+import { PAGE_GUTTER } from '@/components/page';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import {
-  activeChips,
-  type FilterChip,
-  type FilterKey,
-  type FilterSpec,
-} from '@/lib/filters';
+import { activeChips, type FilterChip, type FilterKey, type FilterSpec } from '@/lib/filters';
 import { cn } from '@/lib/utils';
 import { AdvancedFilters } from './AdvancedFilters';
 import { DateRangeControl } from './DateRangeControl';
@@ -52,7 +48,10 @@ export function FilterBar({
   return (
     <div
       className={cn(
-        'sticky top-0 z-30 border-b border-border bg-background/95 px-4 py-2 backdrop-blur',
+        // Sticks under the page header once the header scrolls away, so the controls
+        // that shape the rows below are always in reach.
+        'sticky top-0 z-30 border-y border-border bg-background/80 py-2.5 backdrop-blur-md',
+        PAGE_GUTTER,
         className,
       )}
     >
@@ -91,7 +90,12 @@ export function FilterBar({
         <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
           <span className="sr-only">Active filters</span>
           {chips.map((chip) => (
-            <ChipButton key={`${chip.key}:${chip.value ?? ''}`} chip={chip} onChange={onChange} filters={filters} />
+            <ChipButton
+              key={`${chip.key}:${chip.value ?? ''}`}
+              chip={chip}
+              onChange={onChange}
+              filters={filters}
+            />
           ))}
           <Button variant="ghost" size="sm" onClick={onReset}>
             Reset all

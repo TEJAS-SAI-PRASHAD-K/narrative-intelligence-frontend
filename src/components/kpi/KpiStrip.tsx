@@ -1,4 +1,5 @@
-import { ChevronDown, ChevronUp } from 'lucide-react';
+import { ChevronDown, ChevronUp, FileText, Heart, Smile, Sparkles, Users } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { KpiBundle } from '@/api/types';
 import { Button } from '@/components/ui/button';
 import { formatDateTime } from '@/lib/format';
@@ -11,6 +12,15 @@ import { KpiCard } from './KpiCard';
 export type KpiSliceName = 'posts' | 'engagements' | 'authors' | 'sentiment' | 'emotions';
 
 const ORDER: KpiSliceName[] = ['posts', 'engagements', 'authors', 'sentiment', 'emotions'];
+
+/** Decorative only -- each card's label is what carries its meaning. */
+const SLICE_ICON: Record<KpiSliceName, LucideIcon> = {
+  posts: FileText,
+  engagements: Heart,
+  authors: Users,
+  sentiment: Smile,
+  emotions: Sparkles,
+};
 
 export function KpiStrip({
   bundle,
@@ -58,11 +68,12 @@ export function KpiStrip({
       </div>
 
       {!collapsed && (
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
           {ORDER.map((slice) => (
             <KpiCard
               key={slice}
               metric={bundle[slice]}
+              icon={SLICE_ICON[slice]}
               onDrilldown={onDrilldown ? () => onDrilldown(slice) : undefined}
               drilldownLabel={`Break down ${bundle[slice].label}`}
             />

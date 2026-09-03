@@ -1,4 +1,5 @@
 import { ChevronRight, TrendingDown, TrendingUp } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import type { Metric } from '@/api/types';
 import { NotMeasured } from '@/components/risk/NotMeasured';
 import { InfoTip, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
@@ -18,11 +19,14 @@ import { cn } from '@/lib/utils';
  */
 export function KpiCard({
   metric,
+  icon: Icon,
   onDrilldown,
   drilldownLabel,
   className,
 }: {
   metric: Metric;
+  /** Anchors the card at a glance. Purely decorative -- the label carries the meaning. */
+  icon?: LucideIcon;
   /** Set only in narrative-scoped mode, where each card expands into its breakdown. */
   onDrilldown?: (() => void) | undefined;
   drilldownLabel?: string;
@@ -34,8 +38,16 @@ export function KpiCard({
 
   const body = (
     <>
-      <div className="flex items-center gap-1">
-        <span className="truncate text-2xs uppercase tracking-wide text-muted-foreground">
+      <div className="flex items-center gap-1.5">
+        {Icon && (
+          <span
+            aria-hidden="true"
+            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary ring-1 ring-inset ring-primary/20"
+          >
+            <Icon className="h-3.5 w-3.5" />
+          </span>
+        )}
+        <span className="truncate text-2xs font-medium uppercase tracking-wide text-muted-foreground">
           {metric.label}
         </span>
         <InfoTip label={`What does ${metric.label} count?`}>
@@ -57,7 +69,7 @@ export function KpiCard({
         </InfoTip>
       </div>
 
-      <div className="mt-1.5 text-2xl font-semibold leading-none tabular">
+      <div className="mt-3 text-3xl font-semibold leading-none tracking-tight tabular">
         {measured ? (
           formatMetricValue(metric.value, metric.unit)
         ) : (
@@ -71,14 +83,16 @@ export function KpiCard({
         )}
       </div>
 
-      <div className="mt-1.5 flex h-4 items-center gap-1.5">
+      <div className="mt-2.5 flex h-5 items-center gap-1.5">
         {delta !== null ? (
           <Tooltip>
             <TooltipTrigger asChild>
               <span
                 className={cn(
-                  'inline-flex cursor-help items-center gap-0.5 text-2xs',
-                  (metric.delta_pct ?? 0) > 0 ? 'text-risk-med' : 'text-risk-low',
+                  'inline-flex cursor-help items-center gap-0.5 rounded-md px-1.5 py-0.5 text-2xs font-medium',
+                  (metric.delta_pct ?? 0) > 0
+                    ? 'bg-risk-med-bg text-risk-med'
+                    : 'bg-risk-low-bg text-risk-low',
                 )}
               >
                 {(metric.delta_pct ?? 0) > 0 ? (
@@ -101,8 +115,8 @@ export function KpiCard({
   return (
     <div
       className={cn(
-        'rounded-lg border border-border bg-card p-3',
-        interactive && 'transition-colors hover:border-primary/60',
+        'card-surface p-4',
+        interactive && 'card-interactive cursor-pointer hover:border-primary/50',
         className,
       )}
       // Convenience for mouse users. The real affordance is the button below, which

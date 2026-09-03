@@ -1,4 +1,5 @@
 import { SlidersHorizontal } from 'lucide-react';
+import { useNarrativeFeed } from '@/api/queries/narratives';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -16,19 +17,38 @@ import {
 } from '@/components/ui/sheet';
 import { Slider } from '@/components/ui/slider';
 import { Switch } from '@/components/ui/switch';
-import { countActiveFilters, type ArrayFilterKey, type FilterSpec } from '@/lib/filters';
-import { humanizeEnum } from '@/lib/format';
+import {
+  countActiveFilters,
+  emptyFilterSpec,
+  type ArrayFilterKey,
+  type FilterSpec,
+} from '@/lib/filters';
+import { humanizeEnum, platformLabel, truncate } from '@/lib/format';
 
 /** Vocabularies the contract fixes. Nothing here is invented by the frontend. */
+const PLATFORMS = ['reddit', 'mastodon', 'news', 'gdelt', 'youtube'] as const;
 const SENTIMENTS = ['positive', 'neutral', 'negative'] as const;
-const EMOTIONS = ['fear', 'anger', 'disgust', 'happiness', 'surprise', 'sadness', 'neutral'] as const;
+const EMOTIONS = [
+  'fear',
+  'anger',
+  'disgust',
+  'happiness',
+  'surprise',
+  'sadness',
+  'neutral',
+] as const;
 const CONTENT_TYPES = ['post', 'comment', 'article', 'video', 'video_comment'] as const;
 const LANGS = ['en', 'es', 'fr', 'de', 'pt', 'ru', 'ar', 'hi'] as const;
 
 /**
- * The advanced builder behind the "Filters" button. Writes the same URL as every
- * other control; the sheet holds no draft state of its own, so a change applies
- * immediately and the back button undoes it.
+ * The builder behind the "Filters" button. Writes the same URL as every other control;
+ * the sheet holds no draft state of its own, so a change applies immediately and the
+ * back button undoes it.
+ *
+ * Platform and narrative live here too. They used to be two permanently-open dropdowns
+ * in the top bar, which put a "Platform" control on the API keys page, where it
+ * filtered nothing, and split the filter set across two places an analyst had to learn
+ * separately. One home for every filter; the top bar shows what is in force.
  */
 export function AdvancedFilters({
   filters,
@@ -41,11 +61,18 @@ export function AdvancedFilters({
 }) {
   const count = countActiveFilters(filters);
 
+  // A short, top-priority slice purely to name the narratives in the picker. The full
+  // feed lives on its own page; this never paginates.
+  const narrativeOptions = useNarrativeFeed(
+    { ...emptyFilterSpec(filters.project_id), tz: filters.tz },
+    { sort: 'priority', limit: 25 },
+  );
+  const narratives = narrativeOptions.data?.pages[0]?.items ?? [];
+  const selectedNarratives = filters.narrative_id ?? [];
+
   function toggle(key: ArrayFilterKey, value: string) {
     const current = filters[key] ?? [];
-    const next = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
+    const next = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
     onChange({ [key]: next.length > 0 ? next : undefined });
   }
 
@@ -63,8 +90,7 @@ export function AdvancedFilters({
         <SheetHeader>
           <SheetTitle>Filters</SheetTitle>
           <SheetDescription id="advanced-filters-desc">
-            Every filter here is written to the URL. Copy the address bar to share this exact
-            view.
+            Every filter here is written to the URL. Copy the address bar to share this exact view.
           </SheetDescription>
         </SheetHeader>
 
@@ -76,6 +102,53 @@ export function AdvancedFilters({
               value={filters.q ?? ''}
               onChange={(e) => onChange({ q: e.target.value || undefined })}
             />
+          </Group>
+
+          <CheckGroup
+            label="Platform"
+            values={PLATFORMS}
+            selected={filters.platform ?? []}
+            onToggle={(v) => toggle('platform', v)}
+            renderLabel={platformLabel}
+          />
+
+          <Group label="Narrative">
+            {narrativeOptions.isLoading && (
+              <p className="text-2xs text-muted-foreground">Loading narratives…</p>
+            )}
+            {!narrativeOptions.isLoading && narratives.length === 0 && (
+              <p className="text-2xs text-muted-foreground">
+                No narratives in this project yet. Clustering has to run before there is anything to
+                filter by.
+              </p>
+            )}
+            {narratives.length > 0 && (
+              <>
+                <p className="text-2xs text-muted-foreground">
+                  The 25 highest-priority narratives. Selecting one also scopes the overview to it.
+                </p>
+                <div className="max-h-56 space-y-1 overflow-y-auto pr-1">
+                  {narratives.map((n) => (
+                    <label
+                      key={n.id}
+                      className="flex cursor-pointer items-start gap-2 rounded-sm px-1 py-0.5 text-xs hover:bg-accent"
+                    >
+                      <Checkbox
+                        checked={selectedNarratives.includes(n.id)}
+                        onCheckedChange={() => toggle('narrative_id', n.id)}
+                        className="mt-0.5"
+                      />
+                      <span className="min-w-0">
+                        <span className="mr-1.5 font-mono text-2xs text-muted-foreground">
+                          #{n.display_id}
+                        </span>
+                        {truncate(n.title.text ?? 'Untitled narrative', 60)}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </>
+            )}
           </Group>
 
           <CheckGroup
@@ -172,11 +245,14 @@ function CheckGroup({
   values,
   selected,
   onToggle,
+  /** Platform names are not `humanizeEnum` shaped: GDELT is not "Gdelt". */
+  renderLabel = humanizeEnum,
 }: {
   label: string;
   values: readonly string[];
   selected: string[];
   onToggle: (value: string) => void;
+  renderLabel?: (value: string) => string;
 }) {
   return (
     <Group label={label}>
@@ -191,7 +267,7 @@ function CheckGroup({
                 onCheckedChange={() => onToggle(v)}
               />
               <Label htmlFor={id} className="cursor-pointer normal-case tracking-normal">
-                {humanizeEnum(v)}
+                {renderLabel(v)}
               </Label>
             </div>
           );
