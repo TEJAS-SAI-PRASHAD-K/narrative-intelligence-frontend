@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useDomains } from '@/api/queries/entities';
 import type { DomainOut } from '@/api/types';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { PageShell } from '@/components/page';
 import { NotMeasured } from '@/components/risk/NotMeasured';
 import { RiskDot } from '@/components/risk/RiskDot';
 import { riskLevelFromBand } from '@/components/risk/riskLevel';
@@ -39,14 +40,14 @@ const LIST_DEFAULTS = { sort: 'risk', limit: 100 } as const;
 export default function DomainsPage() {
   const { projectId, slug } = useProjectContext();
   const navigate = useNavigate();
-  const { filters, list, patchFilters, resetFilters, setList } = useFilters(projectId, LIST_DEFAULTS);
+  const { filters, list, patchFilters, resetFilters, setList } = useFilters(
+    projectId,
+    LIST_DEFAULTS,
+  );
   const [selected, setSelected] = useState<string | null>(null);
 
   const domains = useDomains(filters, list);
-  const rows = useMemo(
-    () => domains.data?.pages.flatMap((p) => p.items) ?? [],
-    [domains.data],
-  );
+  const rows = useMemo(() => domains.data?.pages.flatMap((p) => p.items) ?? [], [domains.data]);
 
   const columns: Column<DomainOut>[] = [
     {
@@ -96,7 +97,8 @@ export default function DomainsPage() {
     {
       id: 'age',
       header: 'Domain age',
-      headerHint: 'Days since WHOIS registration. A very new domain behind a viral claim is a signal.',
+      headerHint:
+        'Days since WHOIS registration. A very new domain behind a viral claim is a signal.',
       cell: (d) =>
         d.domain_age_days === null || d.domain_age_days === undefined ? (
           <NotMeasured reason="WHOIS has not been fetched for this domain." />
@@ -147,33 +149,35 @@ export default function DomainsPage() {
   ];
 
   return (
-    <div className="flex min-h-full flex-col">
-      <FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters}>
-        <div className="flex items-center gap-1.5">
-          <Label htmlFor="domain-sort" className="whitespace-nowrap">
-            Sort
-          </Label>
-          <Select
-            value={list.sort ?? 'risk'}
-            onValueChange={(v) => setList({ sort: v, cursor: undefined })}
-          >
-            <SelectTrigger id="domain-sort" className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SORTS.map((s) => (
-                <SelectItem key={s.value} value={s.value}>
-                  {s.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </FilterBar>
-
-      <div className="space-y-3 p-4">
-        <h1 className="text-sm font-semibold">Domain risk</h1>
-
+    <PageShell
+      title="Domain risk"
+      description="The websites being linked to from this corpus, scored for how risky each source is. Select a domain to see who is sharing it and why it scored as it did."
+      filterBar={
+        <FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters}>
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="domain-sort" className="whitespace-nowrap">
+              Sort
+            </Label>
+            <Select
+              value={list.sort ?? 'risk'}
+              onValueChange={(v) => setList({ sort: v, cursor: undefined })}
+            >
+              <SelectTrigger id="domain-sort" className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SORTS.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </FilterBar>
+      }
+    >
+      <div className="space-y-4">
         <EntityTable
           tableId="domains"
           caption="Domains ranked by risk score"
@@ -205,13 +209,13 @@ export default function DomainsPage() {
               </Button>
             ) : (
               <p className="text-2xs text-muted-foreground">
-                {formatCount(rows.length)} domain{rows.length === 1 ? '' : 's'} — complete for
-                these filters.
+                {formatCount(rows.length)} domain{rows.length === 1 ? '' : 's'} — complete for these
+                filters.
               </p>
             )
           }
         />
       </div>
-    </div>
+    </PageShell>
   );
 }

@@ -28,9 +28,18 @@ export function driverColumns(
           {/* `label` is the readable handle; `entity` is the composite id the API keys
               on (e.g. "mastodon:clerk_059"). Lead with the readable one and keep the
               id underneath, since that is what a bug report has to quote. */}
-          <span className="truncate font-medium">{displayEntity(d, kind)}</span>
+          {/* Truncation is fine as long as the whole value is still reachable: a handle
+              cut mid-word with no way to read the rest is a dead end. */}
+          <span className="truncate font-medium" title={displayEntity(d, kind)}>
+            {displayEntity(d, kind)}
+          </span>
           {d.label && d.label !== d.entity && (
-            <span className="truncate font-mono text-2xs text-muted-foreground">{d.entity}</span>
+            <span
+              className="truncate font-mono text-2xs text-muted-foreground"
+              title={d.entity}
+            >
+              {d.entity}
+            </span>
           )}
         </div>
       ),
@@ -71,7 +80,10 @@ export function driverColumns(
         d.bot_like_share === null || d.bot_like_share === undefined ? (
           <NotMeasured />
         ) : (
-          <RiskDot level={riskLevelFromScore(d.bot_like_share)} label={formatScore(d.bot_like_share)} />
+          <RiskDot
+            level={riskLevelFromScore(d.bot_like_share)}
+            label={formatScore(d.bot_like_share)}
+          />
         ),
     },
     {
@@ -81,7 +93,10 @@ export function driverColumns(
         d.mean_toxicity === null || d.mean_toxicity === undefined ? (
           <NotMeasured />
         ) : (
-          <RiskDot level={riskLevelFromScore(d.mean_toxicity)} label={formatScore(d.mean_toxicity)} />
+          <RiskDot
+            level={riskLevelFromScore(d.mean_toxicity)}
+            label={formatScore(d.mean_toxicity)}
+          />
         ),
     },
     {
@@ -101,7 +116,9 @@ export function driverColumns(
       headerHint: 'Against the preceding window of equal length.',
       cell: (d) => {
         const delta = formatDelta(d.delta_pct);
-        return delta === null ? <NotMeasured reason="No comparison window." /> : (
+        return delta === null ? (
+          <NotMeasured reason="No comparison window." />
+        ) : (
           <span className="tabular">{delta}</span>
         );
       },

@@ -6,6 +6,7 @@ import { useCreateNarrative, useNarrativeFeed, useUpdateNarrative } from '@/api/
 import { usePosts } from '@/api/queries/entities';
 import { AiPill } from '@/components/ai/AiPill';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { PageShell } from '@/components/page';
 import { OriginalPost } from '@/components/post/OriginalPost';
 import { RiskScorecard } from '@/components/risk/RiskScorecard';
 import { EmptyState, ErrorState, SkeletonCard } from '@/components/states';
@@ -48,14 +49,8 @@ export default function CuratePage() {
   const posts = usePosts(filters, { limit: 50, sort: 'engagement' });
   const updateNarrative = useUpdateNarrative();
 
-  const narratives = useMemo(
-    () => feed.data?.pages.flatMap((p) => p.items) ?? [],
-    [feed.data],
-  );
-  const postItems = useMemo(
-    () => posts.data?.pages.flatMap((p) => p.items) ?? [],
-    [posts.data],
-  );
+  const narratives = useMemo(() => feed.data?.pages.flatMap((p) => p.items) ?? [], [feed.data]);
+  const postItems = useMemo(() => posts.data?.pages.flatMap((p) => p.items) ?? [], [posts.data]);
 
   async function rename(id: string, title: string) {
     try {
@@ -71,28 +66,32 @@ export default function CuratePage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col">
-      <FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters} />
-
-      <div className="grid min-h-0 flex-1 gap-4 p-4 xl:grid-cols-2">
+    <PageShell
+      title="Curate"
+      description="Build a narrative by hand when clustering has not grouped posts the way an analyst would. Tick the posts that belong together, then name the narrative."
+      meta={
+        <Badge variant="muted">
+          {formatCount(selectedPostIds.length)} post
+          {selectedPostIds.length === 1 ? '' : 's'} selected
+        </Badge>
+      }
+      actions={
+        <Button
+          size="sm"
+          onClick={() => setComposeOpen(true)}
+          disabled={selectedPostIds.length === 0}
+        >
+          <Plus className="h-3 w-3" aria-hidden="true" />
+          Create narrative
+        </Button>
+      }
+      filterBar={<FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters} />}
+    >
+      <div className="grid min-h-0 flex-1 gap-6 xl:grid-cols-2">
         <section className="min-w-0 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-sm font-semibold">Compose a narrative</h1>
-            <div className="flex-1" />
-            <Badge variant="muted">
-              {formatCount(selectedPostIds.length)} post
-              {selectedPostIds.length === 1 ? '' : 's'} selected
-            </Badge>
-            <Button size="sm" onClick={() => setComposeOpen(true)} disabled={selectedPostIds.length === 0}>
-              <Plus className="h-3 w-3" aria-hidden="true" />
-              Create narrative
-            </Button>
-          </div>
-
-          <p className="text-2xs text-muted-foreground">
-            Select posts to group by hand. A manual narrative is marked{' '}
-            <code>is_manual</code>, so it is never mistaken for a clustering output.
-          </p>
+          <h2 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Posts
+          </h2>
 
           {posts.isLoading && <SkeletonCard />}
           {Boolean(posts.error) && (
@@ -141,21 +140,25 @@ export default function CuratePage() {
         </section>
 
         <section className="min-w-0 space-y-3">
-          <h2 className="text-sm font-semibold">Rename and tag</h2>
+          <h2 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Rename and tag
+          </h2>
           <p className="text-2xs text-muted-foreground">
-            Editing a title sets <code>edited_by_user</code>, which swaps the AI pill for the
-            analyst-edited pill everywhere that narrative appears.
+            A title you edit is marked as analyst-written wherever that narrative appears, so nobody
+            mistakes your wording for the model's.
           </p>
 
           {feed.isLoading && <SkeletonCard />}
-          {Boolean(feed.error) && <ErrorState error={feed.error} onRetry={() => void feed.refetch()} />}
+          {Boolean(feed.error) && (
+            <ErrorState error={feed.error} onRetry={() => void feed.refetch()} />
+          )}
           {!feed.isLoading && narratives.length === 0 && (
             <EmptyState icon={<PenLine className="h-6 w-6" />} title="No narratives to curate" />
           )}
 
           <ul className="space-y-2">
             {narratives.map((n) => (
-              <li key={n.id} className="space-y-2 rounded-lg border border-border bg-card p-3">
+              <li key={n.id} className="space-y-2 card-surface p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="muted" className="font-mono">
                     ID: {n.display_id}
@@ -201,7 +204,7 @@ export default function CuratePage() {
           navigate(`/p/${slug}/narratives/${id}`);
         }}
       />
-    </div>
+    </PageShell>
   );
 }
 
@@ -256,8 +259,9 @@ function ComposeDialog({
         <DialogHeader>
           <DialogTitle>Create a manual narrative</DialogTitle>
           <DialogDescription>
-            Groups {postIds.length} selected post{postIds.length === 1 ? '' : 's'}. The result
-            is marked <code>is_manual</code> and carries human provenance, not an AI pill.
+            Groups {postIds.length} selected post{postIds.length === 1 ? '' : 's'} into one
+            narrative. It is marked as analyst-built, so nobody mistakes it for something the
+            clustering produced.
           </DialogDescription>
         </DialogHeader>
 

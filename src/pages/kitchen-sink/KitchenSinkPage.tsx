@@ -74,12 +74,12 @@ export default function KitchenSinkPage() {
       >
         <div className="grid gap-3 md:grid-cols-2">
           <Labelled label="Complete">
-            <div className="rounded-lg border border-border bg-card p-3">
+            <div className="card-surface p-4">
               <RiskScorecard scorecard={fx.scorecardComplete} />
             </div>
           </Labelled>
           <Labelled label='missing: ["authenticity", "bot_like", "toxicity"]'>
-            <div className="rounded-lg border border-border bg-card p-3">
+            <div className="card-surface p-4">
               <RiskScorecard
                 scorecard={fx.scorecardMissing}
                 onExplain={() => setExplainerOpen(true)}
@@ -93,7 +93,7 @@ export default function KitchenSinkPage() {
         title="RiskDot"
         note="Colour AND shape AND text. Print any screenshot in grayscale: the glyph still separates the levels."
       >
-        <div className="flex flex-wrap gap-5 rounded-lg border border-border bg-card p-3">
+        <div className="flex flex-wrap gap-5 card-surface p-4">
           <RiskDot level="high" />
           <RiskDot level="medium" />
           <RiskDot level="low" />
@@ -103,7 +103,7 @@ export default function KitchenSinkPage() {
             Unmeasured value: <NotMeasured />
           </span>
         </div>
-        <div className="rounded-lg border border-border bg-card p-3 grayscale">
+        <div className="card-surface p-4 grayscale">
           <p className="mb-2 text-2xs uppercase tracking-wide text-muted-foreground">
             Same row, forced to grayscale
           </p>

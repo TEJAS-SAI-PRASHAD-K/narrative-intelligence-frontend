@@ -4,6 +4,7 @@ import type { CohortOut } from '@/api/types';
 import { CohortsMethodologyNote } from '@/components/cohorts/CohortsPanel';
 import { cohortColumns } from '@/components/cohorts/cohortColumns';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { PageShell } from '@/components/page';
 import { ScoreCell } from '@/components/risk/ScoreCell';
 import { EmptyState } from '@/components/states';
 import { EntityTable } from '@/components/table/EntityTable';
@@ -29,12 +30,20 @@ export default function CohortsPage() {
   const members = useCohortAuthors(selected?.id, { limit: 200 });
 
   return (
-    <div className="flex min-h-full flex-col">
-      <FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters} />
-
-      <div className="grid min-h-0 flex-1 gap-4 p-4 xl:grid-cols-2">
+    <PageShell
+      title="Cohorts"
+      description="Groups of accounts that behave alike — posting the same things at the same times. A cohort is a model's suggestion to look closer, not a finding of coordination."
+      meta={
+        cohorts.data && (
+          <span className="text-2xs text-muted-foreground">
+            {cohorts.data.items.length} detected
+          </span>
+        )
+      }
+      filterBar={<FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters} />}
+    >
+      <div className="grid min-h-0 flex-1 gap-6 xl:grid-cols-2">
         <div className="min-w-0 space-y-3">
-          <h1 className="text-sm font-semibold">Cohorts</h1>
           <CohortsMethodologyNote />
           <EntityTable
             tableId="cohorts-page"
@@ -91,7 +100,9 @@ export default function CohortsPage() {
                   {
                     id: 'handle',
                     header: 'Author',
-                    cell: (a) => <span className="truncate font-medium">@{a.handle ?? a.author_id}</span>,
+                    cell: (a) => (
+                      <span className="truncate font-medium">@{a.handle ?? a.author_id}</span>
+                    ),
                   },
                   { id: 'source', header: 'Platform', cell: (a) => platformLabel(a.source) },
                   {
@@ -132,6 +143,6 @@ export default function CohortsPage() {
         tz={filters.tz}
         slug={slug}
       />
-    </div>
+    </PageShell>
   );
 }

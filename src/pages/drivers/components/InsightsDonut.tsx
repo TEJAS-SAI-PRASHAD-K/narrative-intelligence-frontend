@@ -124,7 +124,7 @@ function Donut({
   const dominant = slices.reduce((a, b) => (b.value > a.value ? b : a));
 
   return (
-    <div className="space-y-2 rounded-lg border border-border bg-card p-3">
+    <div className="space-y-2 card-surface p-4">
       <ResponsiveContainer width="100%" height={150}>
         <PieChart>
           <Pie

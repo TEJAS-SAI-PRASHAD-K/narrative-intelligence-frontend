@@ -3,6 +3,7 @@ import { useDrivers, usePosts, type DriverKind } from '@/api/queries/entities';
 import type { DriverItem } from '@/api/types';
 import { CohortsPanel } from '@/components/cohorts/CohortsPanel';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { PageShell } from '@/components/page';
 import { OriginalPost } from '@/components/post/OriginalPost';
 import { EmptyState, ErrorState, SkeletonCard } from '@/components/states';
 import { EntityTable } from '@/components/table/EntityTable';
@@ -55,27 +56,30 @@ export default function DriversPage() {
   const items = drivers.data?.items ?? [];
 
   return (
-    <div className="flex min-h-full flex-col">
-      <FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters}>
-        <Button variant="ghost" size="sm" onClick={() => setCohortsOpen(true)}>
-          Cohorts
-        </Button>
-      </FilterBar>
-
-      <div className="grid min-h-0 flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <PageShell
+      title="Conversation drivers"
+      description="Who and what is carrying this conversation — the accounts posting most, the hashtags they use, and the links they share. Select a row to see the post behind it."
+      meta={
+        drivers.data && (
+          <span className="flex items-center gap-1 text-2xs text-muted-foreground">
+            {formatCount(items.length)} rows
+            <InfoTip label="How are drivers computed?">
+              <p>{drivers.data.definition}</p>
+            </InfoTip>
+          </span>
+        )
+      }
+      filterBar={
+        <FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters}>
+          <Button variant="ghost" size="sm" onClick={() => setCohortsOpen(true)}>
+            Cohorts
+          </Button>
+        </FilterBar>
+      }
+      bodyClassName="gap-6"
+    >
+      <div className="grid min-h-0 flex-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="min-w-0 space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <h1 className="text-sm font-semibold">Conversation drivers</h1>
-            {drivers.data && (
-              <span className="flex items-center gap-1 text-2xs text-muted-foreground">
-                {formatCount(items.length)} rows
-                <InfoTip label="How are drivers computed?">
-                  <p>{drivers.data.definition}</p>
-                </InfoTip>
-              </span>
-            )}
-          </div>
-
           <Tabs value={kind} onValueChange={(v) => setPageParam('kind', v)}>
             <TabsList>
               {KINDS.map((k) => (
@@ -105,10 +109,13 @@ export default function DriversPage() {
             maxHeight="calc(100vh - 18rem)"
             footer={
               items.length >= PAGE_LIMIT ? (
-                <p className="text-2xs text-muted-foreground">
-                  Showing the first {PAGE_LIMIT} rows — the drivers endpoint returns no
-                  pagination cursor, so this is not necessarily the complete set. Narrow the
-                  filters to be sure you are seeing everything. (contract-gaps #8)
+                <p className="flex flex-wrap items-center gap-1 text-2xs text-muted-foreground">
+                  Showing the top {PAGE_LIMIT} rows. There may be more — narrow the date range or
+                  add a filter to be sure you are seeing everything.
+                  <InfoTip label="Why can this list be incomplete?">
+                    The drivers endpoint returns one page and no pagination cursor, so the UI cannot
+                    ask for the next one. Recorded as contract-gaps #8.
+                  </InfoTip>
                 </p>
               ) : (
                 <p className="text-2xs text-muted-foreground">
@@ -170,6 +177,6 @@ export default function DriversPage() {
           setCohortsOpen(false);
         }}
       />
-    </div>
+    </PageShell>
   );
 }

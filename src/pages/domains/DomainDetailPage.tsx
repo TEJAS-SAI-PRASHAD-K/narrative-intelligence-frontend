@@ -1,4 +1,4 @@
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { ApiError } from '@/api/client';
@@ -9,6 +9,7 @@ import { RiskDot } from '@/components/risk/RiskDot';
 import { riskLevelFromBand } from '@/components/risk/riskLevel';
 import { ScoreCell } from '@/components/risk/ScoreCell';
 import { ScoreExplainer } from '@/components/score/ScoreExplainer';
+import { PageShell } from '@/components/page';
 import { EmptyState, ErrorState, SkeletonCard, SkeletonText } from '@/components/states';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -59,7 +60,7 @@ export default function DomainDetailPage() {
 
   if (domainQuery.isLoading) {
     return (
-      <div className="space-y-3 p-4">
+      <div className="space-y-3 px-4 py-5 lg:px-6">
         <SkeletonText lines={2} />
         <SkeletonCard />
       </div>
@@ -68,7 +69,7 @@ export default function DomainDetailPage() {
 
   if (domainQuery.error) {
     return (
-      <div className="p-4">
+      <div className="px-4 py-5 lg:px-6">
         <ErrorState
           error={domainQuery.error}
           title="Could not load this domain"
@@ -81,7 +82,7 @@ export default function DomainDetailPage() {
   const d = domainQuery.data;
   if (!d) {
     return (
-      <div className="p-4">
+      <div className="px-4 py-5 lg:px-6">
         <EmptyState title="Domain not found in this project" />
       </div>
     );
@@ -106,25 +107,31 @@ export default function DomainDetailPage() {
   };
 
   return (
-    <div className="space-y-4 p-4">
-      <div className="space-y-2">
-        <Link
-          to={`/p/${slug}/domains`}
-          className="inline-flex items-center gap-1 rounded-sm text-xs text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <ArrowLeft className="h-3 w-3" aria-hidden="true" />
-          All domains
-        </Link>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="font-mono text-lg font-semibold">{d.domain}</h1>
+    <PageShell
+      breadcrumb={[{ label: 'Domains', to: `/p/${slug}/domains` }, { label: d.domain }]}
+      title={d.domain}
+      titleSlot={<span className="font-mono">{d.domain}</span>}
+      description="One website being linked to from this corpus: how risky it scored, what that score was built from, and who is sharing it."
+      meta={
+        <>
           {d.risk_band && (
             <RiskDot level={riskLevelFromBand(d.risk_band)} label={humanizeEnum(d.risk_band)} />
           )}
           <EnrichmentBadge status={d.enrichment_status} detail={d.enrichment_detail} />
-          <div className="flex-1" />
-          <Button size="sm" variant="outline" onClick={() => void runEnrichment()} disabled={enrich.isPending}>
-            <RefreshCw className={enrich.isPending ? 'h-3 w-3 animate-spin' : 'h-3 w-3'} aria-hidden="true" />
+        </>
+      }
+      actions={
+        <>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void runEnrichment()}
+            disabled={enrich.isPending}
+          >
+            <RefreshCw
+              className={enrich.isPending ? 'h-3 w-3 animate-spin' : 'h-3 w-3'}
+              aria-hidden="true"
+            />
             {enrich.isPending ? 'Queued' : 'Enrich now'}
           </Button>
           {(d.components?.length ?? 0) > 0 && (
@@ -132,10 +139,11 @@ export default function DomainDetailPage() {
               Why this score?
             </Button>
           )}
-        </div>
-      </div>
-
-      <section className="rounded-lg border border-border bg-card p-3">
+        </>
+      }
+      bodyClassName="gap-4"
+    >
+      <section className="card-surface p-4">
         <dl className="grid grid-cols-2 gap-x-4 gap-y-2.5 sm:grid-cols-4">
           <Stat
             label="Risk score"
@@ -166,10 +174,7 @@ export default function DomainDetailPage() {
             label="Registrar"
             value={d.registrar ?? <NotMeasured reason="Registrar not disclosed or not fetched." />}
           />
-          <Stat
-            label="Hosting country"
-            value={d.hosting_country ?? <NotMeasured />}
-          />
+          <Stat label="Hosting country" value={d.hosting_country ?? <NotMeasured />} />
           <Stat
             label="TLS cert age"
             value={
@@ -194,8 +199,14 @@ export default function DomainDetailPage() {
             label="Sharer bot ratio"
             value={<ScoreCell value={d.sharing_author_bot_ratio} scale="unit" />}
           />
-          <Stat label="Posts" value={<span className="tabular">{formatCount(d.post_count)}</span>} />
-          <Stat label="Authors" value={<span className="tabular">{formatCount(d.author_count)}</span>} />
+          <Stat
+            label="Posts"
+            value={<span className="tabular">{formatCount(d.post_count)}</span>}
+          />
+          <Stat
+            label="Authors"
+            value={<span className="tabular">{formatCount(d.author_count)}</span>}
+          />
           <Stat
             label="Narratives"
             value={<span className="tabular">{formatCount(d.narrative_count)}</span>}
@@ -254,19 +265,11 @@ export default function DomainDetailPage() {
         error={null}
         subjectLabel={d.domain}
       />
-    </div>
+    </PageShell>
   );
 }
 
-function Stat({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: React.ReactNode;
-  hint?: string;
-}) {
+function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint?: string }) {
   return (
     <div>
       <dt className="text-2xs uppercase tracking-wide text-muted-foreground" title={hint}>

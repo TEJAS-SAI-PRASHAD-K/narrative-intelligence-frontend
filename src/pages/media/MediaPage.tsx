@@ -6,6 +6,7 @@ import type { MediaCheckOut } from '@/api/types';
 import { NotMeasured } from '@/components/risk/NotMeasured';
 import { RiskDot } from '@/components/risk/RiskDot';
 import type { RiskLevel } from '@/components/risk/riskLevel';
+import { PageShell } from '@/components/page';
 import { EmptyState, ErrorState, SkeletonCard } from '@/components/states';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -60,14 +61,11 @@ export default function MediaPage() {
   }
 
   return (
-    <div className="space-y-4 p-4">
-      <div>
-        <h1 className="text-sm font-semibold">Media check</h1>
-        <p className="mt-0.5 text-2xs text-muted-foreground">
-          Runs the Xception deepfake detector over an uploaded image or video.
-        </p>
-      </div>
-
+    <PageShell
+      title="Media check"
+      description="Upload an image or video and a detector looks for signs it was synthetically generated or altered. A verdict is evidence to weigh, not proof either way."
+      bodyClassName="gap-4"
+    >
       <div
         onDragOver={(e) => {
           e.preventDefault();
@@ -98,7 +96,12 @@ export default function MediaPage() {
             if (file) void upload(file);
           }}
         />
-        <Button size="sm" variant="outline" onClick={() => inputRef.current?.click()} disabled={submit.isPending}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => inputRef.current?.click()}
+          disabled={submit.isPending}
+        >
           {submit.isPending ? 'Uploading…' : 'Choose a file'}
         </Button>
       </div>
@@ -137,7 +140,7 @@ export default function MediaPage() {
           ))}
         </ul>
       </section>
-    </div>
+    </PageShell>
   );
 }
 
@@ -148,7 +151,7 @@ function VerdictCard({ check, compact }: { check: MediaCheckOut; compact?: boole
     retention && typeof retention.retain_hours === 'number' ? retention.retain_hours : null;
 
   return (
-    <article className="space-y-2.5 rounded-lg border border-border bg-card p-3">
+    <article className="space-y-2.5 card-surface p-4">
       <div className="flex flex-wrap items-center gap-2">
         {check.verdict ? (
           <RiskDot level={level} label={humanizeEnum(check.verdict)} />
@@ -207,7 +210,9 @@ function VerdictCard({ check, compact }: { check: MediaCheckOut; compact?: boole
           }
         />
         <Stat label="Size" value={formatBytes(check.size_bytes)} />
-        {check.model && <Stat label="Model" value={`${check.model} ${check.model_version ?? ''}`} />}
+        {check.model && (
+          <Stat label="Model" value={`${check.model} ${check.model_version ?? ''}`} />
+        )}
       </dl>
 
       {/* The explanation is the point, not the number. */}

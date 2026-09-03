@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useJobHistory } from '@/api/queries/ops';
 import type { JobOut } from '@/api/types';
 import { EmptyState, ErrorState } from '@/components/states';
+import { PageShell } from '@/components/page';
 import { EntityTable } from '@/components/table/EntityTable';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
@@ -18,10 +19,7 @@ import { formatDateTime, formatDuration, humanizeEnum } from '@/lib/format';
 
 const STATUSES = ['all', 'pending', 'running', 'succeeded', 'failed', 'cancelled'] as const;
 
-const STATUS_VARIANT: Record<
-  JobOut['status'],
-  'risk-low' | 'risk-med' | 'risk-high' | 'muted'
-> = {
+const STATUS_VARIANT: Record<JobOut['status'], 'risk-low' | 'risk-med' | 'risk-high' | 'muted'> = {
   succeeded: 'risk-low',
   running: 'muted',
   pending: 'muted',
@@ -41,37 +39,40 @@ export default function JobsPage() {
   });
 
   return (
-    <div className="space-y-3 p-4">
-      <div className="flex flex-wrap items-end gap-3">
-        <h1 className="text-sm font-semibold">Job history</h1>
-        <div className="flex-1" />
-        <div className="space-y-1">
-          <Label htmlFor="job-status">Status</Label>
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger id="job-status" className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {STATUSES.map((s) => (
-                <SelectItem key={s} value={s}>
-                  {humanizeEnum(s)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+    <PageShell
+      title="Job history"
+      description="Every background task this backend has run — ingestion, clustering, scoring, exports — with how long each took and why any of them failed."
+      actions={
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="space-y-1">
+            <Label htmlFor="job-status">Status</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger id="job-status" className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {STATUSES.map((s) => (
+                  <SelectItem key={s} value={s}>
+                    {humanizeEnum(s)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1">
+            <Label htmlFor="job-kind">Kind</Label>
+            <Input
+              id="job-kind"
+              value={kind}
+              onChange={(e) => setKind(e.target.value)}
+              placeholder="nlp.cluster"
+              className="w-40"
+            />
+          </div>
         </div>
-        <div className="space-y-1">
-          <Label htmlFor="job-kind">Kind</Label>
-          <Input
-            id="job-kind"
-            value={kind}
-            onChange={(e) => setKind(e.target.value)}
-            placeholder="nlp.cluster"
-            className="w-40"
-          />
-        </div>
-      </div>
-
+      }
+      bodyClassName="gap-4"
+    >
       {Boolean(jobs.error) && <ErrorState error={jobs.error} onRetry={() => void jobs.refetch()} />}
 
       {!jobs.isLoading && (jobs.data?.items.length ?? 0) === 0 && !jobs.error && (
@@ -94,7 +95,9 @@ export default function JobsPage() {
             {
               id: 'status',
               header: 'Status',
-              cell: (j) => <Badge variant={STATUS_VARIANT[j.status]}>{humanizeEnum(j.status)}</Badge>,
+              cell: (j) => (
+                <Badge variant={STATUS_VARIANT[j.status]}>{humanizeEnum(j.status)}</Badge>
+              ),
             },
             {
               id: 'progress',
@@ -159,6 +162,6 @@ export default function JobsPage() {
           maxHeight="calc(100vh - 14rem)"
         />
       )}
-    </div>
+    </PageShell>
   );
 }
