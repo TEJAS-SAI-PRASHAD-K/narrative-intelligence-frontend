@@ -7,8 +7,9 @@ export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttribute
       ref={ref}
       type={type}
       className={cn(
-        'flex h-8 w-full rounded-md border border-input bg-surface-sunken px-2 py-1 text-xs text-foreground',
-        'placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+        'flex h-9 w-full rounded-lg border border-border bg-surface-sunken px-2.5 py-1 text-xs text-foreground',
+        'transition-colors hover:border-border-strong',
+        'placeholder:text-muted-foreground focus-visible:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
         'disabled:cursor-not-allowed disabled:opacity-50',
         '[color-scheme:dark]',
         className,
@@ -26,8 +27,9 @@ export const Textarea = React.forwardRef<
   <textarea
     ref={ref}
     className={cn(
-      'flex min-h-[64px] w-full rounded-md border border-input bg-surface-sunken px-2 py-1.5 text-xs',
-      'placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+      'flex min-h-[72px] w-full rounded-lg border border-border bg-surface-sunken px-2.5 py-2 text-xs',
+      'transition-colors hover:border-border-strong',
+      'placeholder:text-muted-foreground focus-visible:border-primary/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40',
       'disabled:cursor-not-allowed disabled:opacity-50',
       className,
     )}

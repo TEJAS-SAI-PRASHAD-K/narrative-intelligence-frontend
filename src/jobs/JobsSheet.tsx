@@ -1,87 +1,95 @@
-import { CheckCircle2, ChevronDown, ChevronUp, CircleSlash, Loader2, X, XCircle } from 'lucide-react';
+import { CheckCircle2, CircleSlash, Loader2, X, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import type { JobStatus } from '@/api/types';
+import { EmptyState } from '@/components/states';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
+import {
+  Sheet,
+  SheetBody,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+} from '@/components/ui/sheet';
 import { formatDuration } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { isTerminal, useJobs, type TrackedJob } from './JobStore';
 
 /**
- * Docked bottom-right, global, one row per tracked job. This is the only place work
- * enqueued by a 202 becomes visible; without it a button that fires a 202 is
- * indistinguishable from a button that does nothing.
+ * Background work, in a panel opened from the sidebar's Jobs item.
+ *
+ * This was a tray fixed to the bottom-right corner. It was the only place a 202 became
+ * visible, which was right, but it sat on top of whatever was underneath it -- the
+ * network legend, a table's footer, the last row of a list -- and an analyst could not
+ * move it. In a panel it covers nothing, and the sidebar badge carries the signal the
+ * floating tray existed to provide.
  */
-export function JobTray() {
+export function JobsSheet({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) {
   const { jobs, active, dismiss, cancel, clearFinished } = useJobs();
-  const [collapsed, setCollapsed] = useState(false);
 
   // Re-render once a second so the elapsed clocks tick while jobs are running.
   const [, forceTick] = useState(0);
   useEffect(() => {
-    if (active.length === 0) return;
+    if (!open || active.length === 0) return;
     const id = setInterval(() => forceTick((n) => n + 1), 1000);
     return () => clearInterval(id);
-  }, [active.length]);
-
-  if (jobs.length === 0) return null;
+  }, [open, active.length]);
 
   return (
-    <aside
-      aria-label="Background jobs"
-      className="fixed bottom-3 right-3 z-40 w-80 overflow-hidden rounded-lg border border-border bg-surface-raised shadow-2xl"
-    >
-      <div className="flex items-center gap-2 border-b border-border px-2.5 py-1.5">
-        <span className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Jobs
-        </span>
-        {active.length > 0 && (
-          <Badge variant="default" aria-label={`${active.length} running`}>
-            {active.length} running
-          </Badge>
-        )}
-        <div className="flex-1" />
-        <Link
-          to="/jobs"
-          className="rounded-sm px-1 text-2xs text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          See all
-        </Link>
-        {jobs.some((j) => isTerminal(j.status)) && (
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Clear finished jobs"
-            onClick={clearFinished}
-          >
-            <X className="h-3 w-3" aria-hidden="true" />
-          </Button>
-        )}
-        <Button
-          variant="ghost"
-          size="icon-sm"
-          aria-label={collapsed ? 'Expand job tray' : 'Collapse job tray'}
-          aria-expanded={!collapsed}
-          onClick={() => setCollapsed((c) => !c)}
-        >
-          {collapsed ? (
-            <ChevronUp className="h-3 w-3" aria-hidden="true" />
-          ) : (
-            <ChevronDown className="h-3 w-3" aria-hidden="true" />
-          )}
-        </Button>
-      </div>
+    <Sheet open={open} onOpenChange={onOpenChange}>
+      <SheetContent aria-describedby="jobs-sheet-desc">
+        <SheetHeader>
+          <SheetTitle className="flex items-center gap-2">
+            Jobs
+            {active.length > 0 && <Badge variant="default">{active.length} running</Badge>}
+          </SheetTitle>
+          <SheetDescription id="jobs-sheet-desc">
+            Work you have started in this session. Reclustering, ingestion, exports and layouts all
+            run in the background — the screen updates on its own when one finishes.
+          </SheetDescription>
+        </SheetHeader>
 
-      {!collapsed && (
-        <ul className="max-h-72 overflow-y-auto">
-          {jobs.map((job) => (
-            <JobRow key={job.id} job={job} onDismiss={dismiss} onCancel={cancel} />
-          ))}
-        </ul>
-      )}
-    </aside>
+        <SheetBody className="space-y-2">
+          {jobs.length === 0 ? (
+            <EmptyState
+              title="Nothing running"
+              description="Actions that take a while — reclustering, an ingest run, rendering a report — appear here while they work."
+            />
+          ) : (
+            <ul className="divide-y divide-border">
+              {jobs.map((job) => (
+                <JobRow key={job.id} job={job} onDismiss={dismiss} onCancel={cancel} />
+              ))}
+            </ul>
+          )}
+        </SheetBody>
+
+        <SheetFooter className="justify-between">
+          <Link
+            to="/jobs"
+            onClick={() => onOpenChange(false)}
+            className="rounded-sm text-xs text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            See the full job history
+          </Link>
+          {jobs.some((j) => isTerminal(j.status)) && (
+            <Button variant="ghost" size="sm" onClick={clearFinished}>
+              Clear finished
+            </Button>
+          )}
+        </SheetFooter>
+      </SheetContent>
+    </Sheet>
   );
 }
 
@@ -115,10 +123,14 @@ function JobRow({
   const elapsed = ((job.finishedAt ?? Date.now()) - job.startedAt) / 1000;
 
   return (
-    <li className="border-b border-border px-2.5 py-2 last:border-b-0">
+    <li className="py-2.5 first:pt-0 last:pb-0">
       <div className="flex items-center gap-2">
         <Icon
-          className={cn('h-3.5 w-3.5 shrink-0', STATUS_CLASS[job.status], running && 'animate-spin')}
+          className={cn(
+            'h-3.5 w-3.5 shrink-0',
+            STATUS_CLASS[job.status],
+            running && 'animate-spin',
+          )}
           aria-hidden="true"
         />
         <span className="min-w-0 flex-1 truncate text-xs">{job.label}</span>
@@ -146,11 +158,7 @@ function JobRow({
       </div>
 
       {running && (
-        <Progress
-          value={job.progress}
-          className="mt-1.5"
-          aria-label={`${job.label} progress`}
-        />
+        <Progress value={job.progress} className="mt-1.5" aria-label={`${job.label} progress`} />
       )}
 
       <div className="mt-1 flex items-center gap-2 font-mono text-2xs text-muted-foreground">

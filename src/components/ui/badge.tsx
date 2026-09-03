@@ -3,11 +3,11 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 const badgeVariants = cva(
-  'inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-2xs font-medium leading-none transition-colors',
+  'inline-flex items-center gap-1 rounded-md border px-1.5 py-[0.1875rem] text-2xs font-medium leading-none transition-colors',
   {
     variants: {
       variant: {
-        default: 'border-transparent bg-secondary text-secondary-foreground',
+        default: 'border-primary/30 bg-primary/15 text-primary',
         outline: 'border-border text-foreground',
         muted: 'border-transparent bg-muted text-muted-foreground',
         // Risk roles resolve to the same tokens on every page, by construction.

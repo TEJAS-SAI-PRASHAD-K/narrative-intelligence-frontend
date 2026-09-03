@@ -1,6 +1,6 @@
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { ArrowDown, ArrowUpDown, Columns3 } from 'lucide-react';
-import { useMemo, useRef, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { EmptyState, ErrorState, SkeletonTableRows } from '@/components/states';
 import { Button } from '@/components/ui/button';
 import {
@@ -59,7 +59,7 @@ export interface EntityTableProps<T> {
   caption: string;
 }
 
-const ROW_HEIGHT = 33;
+const ROW_HEIGHT = 38;
 
 export function EntityTable<T>({
   tableId,
@@ -86,13 +86,36 @@ export function EntityTable<T>({
     columns.filter((c) => c.defaultHidden).map((c) => c.id),
   );
 
-  const visible = useMemo(
-    () => columns.filter((c) => !hidden.includes(c.id)),
-    [columns, hidden],
-  );
+  const visible = useMemo(() => columns.filter((c) => !hidden.includes(c.id)), [columns, hidden]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const shouldVirtualize = rows.length > virtualizeAbove;
+
+  /**
+   * Whether there are columns off the right edge, and whether any are off the left.
+   *
+   * A wide table used to end in a bare horizontal scrollbar under the page, which reads
+   * as a layout defect rather than as "there is more here". The fade says the same thing
+   * where the analyst is already looking, and disappears once they reach the end.
+   */
+  const [overflow, setOverflow] = useState({ left: false, right: false });
+
+  const updateOverflow = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const max = el.scrollWidth - el.clientWidth;
+    setOverflow({ left: el.scrollLeft > 1, right: max > 1 && el.scrollLeft < max - 1 });
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    updateOverflow();
+    // Column visibility, a resized window and late-arriving rows all change the answer.
+    const observer = new ResizeObserver(updateOverflow);
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [updateOverflow, visible.length, rows.length]);
 
   const virtualizer = useVirtualizer({
     count: shouldVirtualize ? rows.length : 0,
@@ -135,79 +158,104 @@ export function EntityTable<T>({
         </DropdownMenu>
       </div>
 
-      <div
-        ref={scrollRef}
-        className="overflow-auto rounded-lg border border-border"
-        style={{ maxHeight }}
-      >
-        <table className="w-full border-collapse text-xs">
-          <caption className="sr-only">{caption}</caption>
-          <thead className="sticky top-0 z-10 bg-surface-raised">
-            <tr>
-              {visible.map((c) => (
-                <HeaderCell key={c.id} column={c} sort={sort} onSortChange={onSortChange} />
-              ))}
-              {rowActions && (
-                <th scope="col" className="w-20 px-2.5 py-2 text-right">
-                  <span className="sr-only">Row actions</span>
-                </th>
-              )}
-            </tr>
-          </thead>
-
-          <tbody>
-            {isLoading && (
-              <SkeletonTableRows rows={8} columns={visible.length + (rowActions ? 1 : 0)} />
-            )}
-
-            {!isLoading && shouldVirtualize && (
-              <>
-                {/* Spacer rows keep the scrollbar honest while only the window renders. */}
-                <SpacerRow height={virtualizer.getVirtualItems()[0]?.start ?? 0} span={visible.length} />
-                {virtualizer.getVirtualItems().map((v) => {
-                  const row = rows[v.index];
-                  if (!row) return null;
-                  return (
-                    <Row
-                      key={rowKey(row)}
-                      row={row}
-                      columns={visible}
-                      rowKey={rowKey}
-                      onRowClick={onRowClick}
-                      selectedKey={selectedKey}
-                      rowActions={rowActions}
-                    />
-                  );
-                })}
-                <SpacerRow
-                  height={
-                    virtualizer.getTotalSize() -
-                    (virtualizer.getVirtualItems().at(-1)?.end ?? 0)
-                  }
-                  span={visible.length}
-                />
-              </>
-            )}
-
-            {!isLoading &&
-              !shouldVirtualize &&
-              rows.map((row) => (
-                <Row
-                  key={rowKey(row)}
-                  row={row}
-                  columns={visible}
-                  rowKey={rowKey}
-                  onRowClick={onRowClick}
-                  selectedKey={selectedKey}
-                  rowActions={rowActions}
-                />
-              ))}
-          </tbody>
-        </table>
-
-        {!isLoading && rows.length === 0 && (
-          <EmptyState title={emptyTitle} description={emptyDescription} className="m-3" />
+      <div className="relative">
+        {/* Edge fades, not a bare scrollbar: they sit where the content is cut off. */}
+        {overflow.left && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-0 z-30 w-6 rounded-l-lg bg-gradient-to-r from-background to-transparent"
+          />
         )}
+        {overflow.right && (
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 right-0 z-30 w-6 rounded-r-lg bg-gradient-to-l from-background to-transparent"
+          />
+        )}
+
+        <div
+          ref={scrollRef}
+          onScroll={updateOverflow}
+          className="overflow-auto rounded-lg border border-border"
+          style={{ maxHeight }}
+        >
+          <table className="w-full border-collapse text-xs">
+            <caption className="sr-only">{caption}</caption>
+            <thead className="sticky top-0 z-20 bg-surface-raised/95 backdrop-blur">
+              <tr>
+                {visible.map((c, i) => (
+                  <HeaderCell
+                    key={c.id}
+                    column={c}
+                    sort={sort}
+                    onSortChange={onSortChange}
+                    sticky={i === 0}
+                  />
+                ))}
+                {rowActions && (
+                  <th scope="col" className="w-20 px-2.5 py-2 text-right">
+                    <span className="sr-only">Row actions</span>
+                  </th>
+                )}
+              </tr>
+            </thead>
+
+            <tbody>
+              {isLoading && (
+                <SkeletonTableRows rows={8} columns={visible.length + (rowActions ? 1 : 0)} />
+              )}
+
+              {!isLoading && shouldVirtualize && (
+                <>
+                  {/* Spacer rows keep the scrollbar honest while only the window renders. */}
+                  <SpacerRow
+                    height={virtualizer.getVirtualItems()[0]?.start ?? 0}
+                    span={visible.length}
+                  />
+                  {virtualizer.getVirtualItems().map((v) => {
+                    const row = rows[v.index];
+                    if (!row) return null;
+                    return (
+                      <Row
+                        key={rowKey(row)}
+                        row={row}
+                        columns={visible}
+                        rowKey={rowKey}
+                        onRowClick={onRowClick}
+                        selectedKey={selectedKey}
+                        rowActions={rowActions}
+                      />
+                    );
+                  })}
+                  <SpacerRow
+                    height={
+                      virtualizer.getTotalSize() - (virtualizer.getVirtualItems().at(-1)?.end ?? 0)
+                    }
+                    span={visible.length}
+                  />
+                </>
+              )}
+
+              {!isLoading &&
+                !shouldVirtualize &&
+                rows.map((row) => (
+                  <Row
+                    key={rowKey(row)}
+                    row={row}
+                    columns={visible}
+                    rowKey={rowKey}
+                    onRowClick={onRowClick}
+                    selectedKey={selectedKey}
+                    rowActions={rowActions}
+                  />
+                ))}
+            </tbody>
+          </table>
+
+          {!isLoading && rows.length === 0 && (
+            <EmptyState title={emptyTitle} description={emptyDescription} className="m-3" />
+          )}
+        </div>
       </div>
 
       {footer}
@@ -228,10 +276,13 @@ function HeaderCell<T>({
   column,
   sort,
   onSortChange,
+  sticky,
 }: {
   column: Column<T>;
   sort: string | undefined;
   onSortChange: ((sort: string) => void) | undefined;
+  /** The identity column stays put while the measures scroll past it. */
+  sticky?: boolean;
 }) {
   const sortable = Boolean(column.sortKey && onSortChange);
   const active = sortable && sort === column.sortKey;
@@ -242,8 +293,9 @@ function HeaderCell<T>({
       style={column.width ? { width: column.width } : undefined}
       aria-sort={active ? 'descending' : sortable ? 'none' : undefined}
       className={cn(
-        'whitespace-nowrap border-b border-border px-2.5 py-2 text-2xs font-semibold uppercase tracking-wide text-muted-foreground',
+        'whitespace-nowrap border-b border-border px-3 py-2.5 text-2xs font-semibold uppercase tracking-[0.08em] text-muted-foreground',
         column.align === 'right' ? 'text-right' : 'text-left',
+        sticky && 'sticky left-0 z-10 bg-surface-raised',
       )}
     >
       {sortable ? (
@@ -308,21 +360,35 @@ function Row<T>({
           }
         : {})}
       className={cn(
-        'border-b border-border last:border-b-0',
-        clickable && 'cursor-pointer hover:bg-accent/40 focus-visible:bg-accent/60 focus-visible:outline-none',
+        'group border-b border-border/60 transition-colors last:border-b-0',
+        clickable &&
+          'cursor-pointer hover:bg-accent/40 focus-visible:bg-accent/60 focus-visible:outline-none',
         selected && 'bg-accent/60',
       )}
       style={{ height: ROW_HEIGHT }}
     >
-      {columns.map((c) => (
+      {columns.map((c, i) => (
         <td
           key={c.id}
-          className={cn('px-2.5 py-1.5', c.align === 'right' ? 'text-right' : 'text-left')}
+          className={cn(
+            'px-3 py-2',
+            c.align === 'right' ? 'text-right' : 'text-left',
+            // The identity column stays readable while the measures scroll past it, so
+            // an analyst never loses track of which row they are reading. It needs its
+            // own background to cover what scrolls under it -- including the row's
+            // hover and selected states, which would otherwise stop at its edge.
+            i === 0 &&
+              cn(
+                'sticky left-0 z-[1] bg-background',
+                clickable && 'group-hover:bg-accent/40',
+                selected && 'bg-accent/60',
+              ),
+          )}
         >
           {c.cell(row)}
         </td>
       ))}
-      {rowActions && <td className="px-2.5 py-1.5 text-right">{rowActions(row)}</td>}
+      {rowActions && <td className="px-3 py-2 text-right">{rowActions(row)}</td>}
     </tr>
   );
 }
