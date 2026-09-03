@@ -14,6 +14,9 @@ export default {
     extend: {
       colors: {
         border: 'hsl(var(--border))',
+        // Flat key, not nested under `border`: a nested colour there collides with
+        // Tailwind's border-width namespace and `border-border-strong` never resolves.
+        'border-strong': 'hsl(var(--border-strong))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
         background: 'hsl(var(--background))',
@@ -87,9 +90,21 @@ export default {
         },
       },
       borderRadius: {
+        xl: 'calc(var(--radius) + 4px)',
         lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        md: 'calc(var(--radius) - 3px)',
+        sm: 'calc(var(--radius) - 5px)',
+      },
+      /*
+       * Elevation, not outlines. A shadow says "this sits above the page"; a border
+       * on everything says "this page is a grid of boxes", which is what the screens
+       * looked like before.
+       */
+      boxShadow: {
+        card: '0 1px 2px 0 rgb(0 0 0 / 0.28), 0 1px 3px 0 rgb(0 0 0 / 0.18)',
+        'card-hover': '0 4px 12px -2px rgb(0 0 0 / 0.38), 0 2px 6px -2px rgb(0 0 0 / 0.24)',
+        panel: '0 8px 30px -6px rgb(0 0 0 / 0.5), 0 2px 8px -2px rgb(0 0 0 / 0.3)',
+        rail: '8px 0 28px -10px rgb(0 0 0 / 0.65)',
       },
       fontFamily: {
         sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],

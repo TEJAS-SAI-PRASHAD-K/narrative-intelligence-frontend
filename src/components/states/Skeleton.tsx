@@ -25,13 +25,13 @@ export function SkeletonText({ lines = 3, className }: { lines?: number; classNa
 
 export function SkeletonKpiStrip({ count = 5 }: { count?: number }) {
   return (
-    <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-5">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       <Loading label="Loading key metrics" />
       {Array.from({ length: count }, (_, i) => (
-        <div key={i} className="rounded-lg border border-border bg-card p-3">
-          <Skeleton className="h-2.5 w-20" />
-          <Skeleton className="mt-2.5 h-6 w-24" />
-          <Skeleton className="mt-2 h-2.5 w-16" />
+        <div key={i} className="card-surface p-4">
+          <Skeleton className="h-6 w-24" />
+          <Skeleton className="mt-3 h-8 w-28" />
+          <Skeleton className="mt-2.5 h-4 w-16" />
         </div>
       ))}
     </div>
@@ -40,7 +40,7 @@ export function SkeletonKpiStrip({ count = 5 }: { count?: number }) {
 
 export function SkeletonCard({ className }: { className?: string }) {
   return (
-    <div className={cn('rounded-lg border border-border bg-card p-3', className)}>
+    <div className={cn('card-surface p-4', className)}>
       <Loading label="Loading" />
       <Skeleton className="h-3.5 w-3/4" />
       <SkeletonText lines={2} className="mt-2.5" />
@@ -59,9 +59,9 @@ export function SkeletonTableRows({ rows = 8, columns = 6 }: { rows?: number; co
     <>
       <Loading label="Loading table rows" />
       {Array.from({ length: rows }, (_, r) => (
-        <tr key={r} className="border-b border-border">
+        <tr key={r} className="border-b border-border/60">
           {Array.from({ length: columns }, (_, c) => (
-            <td key={c} className="px-2.5 py-2">
+            <td key={c} className="px-3 py-2.5">
               <Skeleton className={cn('h-3', c === 0 ? 'w-32' : 'w-16')} />
             </td>
           ))}
@@ -73,7 +73,7 @@ export function SkeletonTableRows({ rows = 8, columns = 6 }: { rows?: number; co
 
 export function SkeletonChart({ className }: { className?: string }) {
   return (
-    <div className={cn('rounded-lg border border-border bg-card p-3', className)}>
+    <div className={cn('card-surface p-4', className)}>
       <Loading label="Loading chart" />
       <Skeleton className="h-3 w-40" />
       <div className="mt-4 flex h-40 items-end gap-1.5">
