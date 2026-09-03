@@ -1,14 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useKpis, useTimeseries, type TimeseriesOptions } from '@/api/queries/overview';
-import type {
-  TimeseriesAgg,
-  TimeseriesGroupBy,
-  TimeseriesInterval,
-} from '@/api/types';
+import type { TimeseriesAgg, TimeseriesGroupBy, TimeseriesInterval } from '@/api/types';
 import { TimeseriesChart } from '@/components/charts/TimeseriesChart';
 import { CohortsPanel } from '@/components/cohorts/CohortsPanel';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { PageShell } from '@/components/page';
 import { KpiStrip, type KpiSliceName } from '@/components/kpi/KpiStrip';
 import { ErrorState, SkeletonKpiStrip } from '@/components/states';
 import { Label } from '@/components/ui/label';
@@ -74,10 +71,16 @@ export default function OverviewPage() {
   const narrativeScoped = (filters.narrative_id?.length ?? 0) > 0;
 
   return (
-    <div className="flex min-h-full flex-col">
-      <FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters} />
-
-      <div className="grid min-h-0 flex-1 gap-4 p-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
+    <PageShell
+      title="Overview"
+      description={
+        narrativeScoped
+          ? 'Scoped to the narratives you selected: how much was posted, by how many accounts, and how it felt.'
+          : 'The shape of this corpus: how much was posted, by how many accounts, how it felt, and which posts carry the most risk.'
+      }
+      filterBar={<FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters} />}
+    >
+      <div className="grid min-h-0 flex-1 gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="min-w-0 space-y-4">
           {kpis.isLoading && <SkeletonKpiStrip />}
           {Boolean(kpis.error) && !kpis.isLoading && (
@@ -96,9 +99,9 @@ export default function OverviewPage() {
 
           {narrativeScoped && (
             <p className="rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-2xs text-muted-foreground">
-              Narrative-scoped mode — every metric above is filtered to the selected
-              narrative{(filters.narrative_id?.length ?? 0) > 1 ? 's' : ''}, and each card opens
-              its breakdown.
+              Narrative-scoped mode — every metric above is filtered to the selected narrative
+              {(filters.narrative_id?.length ?? 0) > 1 ? 's' : ''}, and each card opens its
+              breakdown.
             </p>
           )}
 
@@ -109,7 +112,7 @@ export default function OverviewPage() {
             </TabsList>
 
             <TabsContent value="overview" className="mt-3 space-y-3">
-              <div className="flex flex-wrap items-end gap-3 rounded-lg border border-border bg-surface px-3 py-2">
+              <div className="card-surface flex flex-wrap items-end gap-4 px-4 py-3">
                 <ControlSelect
                   id="group-by"
                   label="Split by"
@@ -169,7 +172,7 @@ export default function OverviewPage() {
             </TabsContent>
 
             <TabsContent value="concepts" className="mt-3">
-              <div className="rounded-lg border border-border bg-card p-3">
+              <div className="card-surface p-4">
                 <ConceptsPanel
                   filters={filters}
                   onSelectTerm={(term) => patchFilters({ q: term })}
@@ -206,7 +209,7 @@ export default function OverviewPage() {
           setCohortsOpen(false);
         }}
       />
-    </div>
+    </PageShell>
   );
 }
 

@@ -69,7 +69,7 @@ export function NarrativeTimelineChart({
   if (error) return <ErrorState error={error} title="Could not load the timeline" onRetry={onRetry} />;
   if (!timeline || timeline.points.length === 0) {
     return (
-      <div className="rounded-lg border border-border bg-card p-3">
+      <div className="card-surface p-4">
         {header}
         <EmptyState title="No activity in this window" />
       </div>
@@ -107,7 +107,7 @@ export function NarrativeTimelineChart({
         ];
 
   return (
-    <div className="rounded-lg border border-border bg-card p-3">
+    <div className="card-surface p-4">
       {header}
       <ResponsiveContainer width="100%" height={200}>
         <AreaChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>

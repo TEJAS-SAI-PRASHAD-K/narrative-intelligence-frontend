@@ -4,7 +4,8 @@ import { ApiError } from '@/api/client';
 import { useIngestRuns, useStartIngest } from '@/api/queries/ops';
 import { useProjectSources, useReadiness, useTestSource } from '@/api/queries/projects';
 import type { IngestRunOut, SourceHealth, SourceTestResult } from '@/api/types';
-import { EmptyState, ErrorState, SkeletonCard } from '@/components/states';
+import { PageShell } from '@/components/page';
+import { EmptyState, ErrorState, SkeletonCard, TechnicalDetails } from '@/components/states';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,17 +32,15 @@ const HEALTH_VARIANT: Record<
   skipped: 'muted',
 };
 
-const RUN_VARIANT: Record<
-  IngestRunOut['status'],
-  'risk-low' | 'risk-med' | 'risk-high' | 'muted'
-> = {
-  succeeded: 'risk-low',
-  running: 'muted',
-  pending: 'muted',
-  failed: 'risk-high',
-  partial: 'risk-med',
-  skipped: 'muted',
-};
+const RUN_VARIANT: Record<IngestRunOut['status'], 'risk-low' | 'risk-med' | 'risk-high' | 'muted'> =
+  {
+    succeeded: 'risk-low',
+    running: 'muted',
+    pending: 'muted',
+    failed: 'risk-high',
+    partial: 'risk-med',
+    skipped: 'muted',
+  };
 
 /**
  * 4.10 Pipeline health.
@@ -99,11 +98,13 @@ export default function SourcesPage() {
   }
 
   return (
-    <div className="space-y-4 p-4">
-      <h1 className="text-sm font-semibold">Pipeline health</h1>
-
+    <PageShell
+      title="Sources"
+      description="Where this project's posts come from. Each source shows when it last brought data in, how much, and whether it is set up at all."
+      bodyClassName="gap-6"
+    >
       {readiness.data && (
-        <section className="space-y-2 rounded-lg border border-border bg-card p-3">
+        <section className="space-y-2 card-surface p-4">
           <h2 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
             Subsystems
           </h2>
@@ -111,7 +112,13 @@ export default function SourcesPage() {
             {readiness.data.subsystems.map((s) => (
               <Badge
                 key={s.name}
-                variant={s.status === 'up' ? 'risk-low' : s.status === 'degraded' ? 'risk-med' : 'risk-high'}
+                variant={
+                  s.status === 'up'
+                    ? 'risk-low'
+                    : s.status === 'degraded'
+                      ? 'risk-med'
+                      : 'risk-high'
+                }
                 title={s.detail}
               >
                 {s.name}: {s.status}
@@ -164,7 +171,7 @@ export default function SourcesPage() {
           {(sources.data ?? []).map((s) => {
             const result = results[s.source];
             return (
-              <li key={s.source} className="space-y-2 rounded-lg border border-border bg-card p-3">
+              <li key={s.source} className="space-y-2 card-surface p-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="text-xs font-medium">{humanizeEnum(s.source)}</span>
                   <Badge variant={HEALTH_VARIANT[s.status]}>{humanizeEnum(s.status)}</Badge>
@@ -189,7 +196,23 @@ export default function SourcesPage() {
                   </Button>
                 </div>
 
-                <p className="text-2xs text-muted-foreground">{s.detail}</p>
+                {s.configured ? (
+                  <p className="text-2xs text-muted-foreground">{s.detail}</p>
+                ) : (
+                  <div className="space-y-1">
+                    <p className="text-2xs text-muted-foreground">
+                      This source has no credentials on this backend, so nothing is being
+                      collected from it. Everything below is from the last time it ran.
+                    </p>
+                    {s.detail && (
+                      <TechnicalDetails label="What the server reported">
+                        <p className="break-words text-2xs text-muted-foreground">
+                          <span className="select-all">{s.detail}</span>
+                        </p>
+                      </TechnicalDetails>
+                    )}
+                  </div>
+                )}
 
                 <dl className="flex flex-wrap gap-x-4 gap-y-1 text-2xs">
                   <Stat
@@ -204,7 +227,10 @@ export default function SourcesPage() {
                     />
                   )}
                   {s.quota_resets_at && (
-                    <Stat label="Quota resets" value={formatDateTime(s.quota_resets_at, filters.tz)} />
+                    <Stat
+                      label="Quota resets"
+                      value={formatDateTime(s.quota_resets_at, filters.tz)}
+                    />
                   )}
                 </dl>
 
@@ -237,7 +263,9 @@ export default function SourcesPage() {
           Ingest runs
         </h2>
         {runs.isLoading && <SkeletonCard />}
-        {Boolean(runs.error) && <ErrorState error={runs.error} onRetry={() => void runs.refetch()} />}
+        {Boolean(runs.error) && (
+          <ErrorState error={runs.error} onRetry={() => void runs.refetch()} />
+        )}
         {!runs.isLoading && (runs.data?.items.length ?? 0) === 0 && (
           <EmptyState title="No ingest runs recorded for this project" />
         )}
@@ -248,7 +276,7 @@ export default function SourcesPage() {
           ))}
         </ul>
       </section>
-    </div>
+    </PageShell>
   );
 }
 
@@ -257,7 +285,7 @@ function IngestRunRow({ run, tz }: { run: IngestRunOut; tz: string }) {
   const reasons = Object.entries(run.rejection_reasons ?? {}).sort((a, b) => b[1] - a[1]);
 
   return (
-    <li className="space-y-2 rounded-lg border border-border bg-card p-3">
+    <li className="space-y-2 card-surface p-4">
       <div className="flex flex-wrap items-center gap-2">
         <span className="text-xs font-medium">{humanizeEnum(run.source)}</span>
         <Badge variant={RUN_VARIANT[run.status]}>{humanizeEnum(run.status)}</Badge>
@@ -281,7 +309,10 @@ function IngestRunRow({ run, tz }: { run: IngestRunOut; tz: string }) {
           }
         />
         {run.manifest_sha && (
-          <Stat label="Manifest" value={<span className="font-mono">{run.manifest_sha.slice(0, 10)}</span>} />
+          <Stat
+            label="Manifest"
+            value={<span className="font-mono">{run.manifest_sha.slice(0, 10)}</span>}
+          />
         )}
       </dl>
 

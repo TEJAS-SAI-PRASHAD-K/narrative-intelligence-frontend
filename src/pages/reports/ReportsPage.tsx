@@ -1,6 +1,7 @@
 import { Download } from 'lucide-react';
 import { useDownloadReport, useReports } from '@/api/queries/ops';
 import type { ReportOut } from '@/api/types';
+import { PageShell } from '@/components/page';
 import { EmptyState, ErrorState } from '@/components/states';
 import { EntityTable } from '@/components/table/EntityTable';
 import { Badge } from '@/components/ui/badge';
@@ -12,13 +13,14 @@ import { formatBytes, formatDateTime, humanizeEnum } from '@/lib/format';
 import { useFilters } from '@/lib/useFilters';
 import { ExportDialog } from '@/pages/narratives/components/ExportDialog';
 
-const STATUS_VARIANT: Record<ReportOut['status'], 'risk-low' | 'risk-med' | 'risk-high' | 'muted'> = {
-  succeeded: 'risk-low',
-  running: 'muted',
-  pending: 'muted',
-  failed: 'risk-high',
-  cancelled: 'risk-med',
-};
+const STATUS_VARIANT: Record<ReportOut['status'], 'risk-low' | 'risk-med' | 'risk-high' | 'muted'> =
+  {
+    succeeded: 'risk-low',
+    running: 'muted',
+    pending: 'muted',
+    failed: 'risk-high',
+    cancelled: 'risk-med',
+  };
 
 /**
  * 4.9 Reports. Rendering is a job; the download link only appears once the job
@@ -51,13 +53,19 @@ export default function ReportsPage() {
   }
 
   return (
-    <div className="space-y-3 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-sm font-semibold">Reports</h1>
-        <div className="flex-1" />
-        <ExportDialog projectId={projectId} slug={slug} filters={filters} />
-      </div>
-
+    <PageShell
+      title="Reports"
+      description="Snapshots of this project you can send to someone who does not use the dashboard. Whatever filters were in force when you exported are baked into the file."
+      meta={
+        reports.data && (
+          <span className="text-2xs text-muted-foreground">
+            {reports.data.items.length} rendered
+          </span>
+        )
+      }
+      actions={<ExportDialog projectId={projectId} slug={slug} filters={filters} />}
+      bodyClassName="gap-4"
+    >
       {Boolean(reports.error) && (
         <ErrorState error={reports.error} onRetry={() => void reports.refetch()} />
       )}
@@ -65,7 +73,7 @@ export default function ReportsPage() {
       {!reports.isLoading && (reports.data?.items.length ?? 0) === 0 && !reports.error && (
         <EmptyState
           title="No reports yet"
-          description="Export from here, the narrative feed or a narrative detail page. The filters in force at that moment are baked into the report."
+          description="Use Export above — or the same button on the narrative feed or a narrative page — to render one."
         />
       )}
 
@@ -135,9 +143,9 @@ export default function ReportsPage() {
               Download
             </Button>
           )}
-          maxHeight="calc(100vh - 14rem)"
+          maxHeight="calc(100vh - 16rem)"
         />
       )}
-    </div>
+    </PageShell>
   );
 }

@@ -4,6 +4,7 @@ import { ApiError } from '@/api/client';
 import { useApiKeys, useCreateApiKey, useRevokeApiKey } from '@/api/queries/ops';
 import type { ApiKeyCreated, ApiKeyOut } from '@/api/types';
 import { EmptyState, ErrorState, SkeletonCard } from '@/components/states';
+import { PageShell } from '@/components/page';
 import { EntityTable } from '@/components/table/EntityTable';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -36,20 +37,21 @@ export default function KeysPage() {
   const { toast } = useToast();
 
   return (
-    <div className="space-y-3 p-4">
-      <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-sm font-semibold">API keys</h1>
-        <div className="flex-1" />
+    <PageShell
+      title="API keys"
+      description="Keys that grant access to this backend and what each one is allowed to do. A key is shown in full once, when it is created, and never again."
+      actions={
         <Button size="sm" onClick={() => setCreateOpen(true)}>
           <Plus className="h-3 w-3" aria-hidden="true" />
           Create key
         </Button>
-      </div>
-
+      }
+      bodyClassName="gap-4"
+    >
       <div className="rounded-md border border-border bg-surface-sunken px-3 py-2 text-2xs text-muted-foreground">
-        This dashboard authenticates with <code>X-API-Key</code> from{' '}
-        <code>VITE_API_KEY</code> — a local-only, capstone-scoped decision documented in
-        the README. There are no user accounts and no login.
+        This dashboard authenticates with <code>X-API-Key</code> from <code>VITE_API_KEY</code> — a
+        deliberate choice for this build. There are no user accounts
+        and no login.
       </div>
 
       {keys.isLoading && <SkeletonCard />}
@@ -104,9 +106,7 @@ export default function KeysPage() {
             {
               id: 'created',
               header: 'Created',
-              cell: (k) => (
-                <span className="tabular">{formatDateTime(k.created_at, 'UTC')}</span>
-              ),
+              cell: (k) => <span className="tabular">{formatDateTime(k.created_at, 'UTC')}</span>,
             },
           ]}
           rows={keys.data?.items ?? []}
@@ -139,7 +139,7 @@ export default function KeysPage() {
 
       <CreateKeyDialog open={createOpen} onOpenChange={setCreateOpen} onMinted={setMinted} />
       <ShowKeyOnceDialog minted={minted} onDismiss={() => setMinted(null)} />
-    </div>
+    </PageShell>
   );
 }
 
@@ -182,8 +182,7 @@ function CreateKeyDialog({
         <DialogHeader>
           <DialogTitle>Create an API key</DialogTitle>
           <DialogDescription>
-            The key is shown once, immediately after it is created, and cannot be retrieved
-            again.
+            The key is shown once, immediately after it is created, and cannot be retrieved again.
           </DialogDescription>
         </DialogHeader>
 
@@ -214,7 +213,10 @@ function CreateKeyDialog({
                       )
                     }
                   />
-                  <Label htmlFor={`scope-${s}`} className="cursor-pointer normal-case tracking-normal">
+                  <Label
+                    htmlFor={`scope-${s}`}
+                    className="cursor-pointer normal-case tracking-normal"
+                  >
                     {s}
                   </Label>
                 </div>
@@ -271,9 +273,8 @@ function ShowKeyOnceDialog({
         <DialogHeader>
           <DialogTitle>Copy this key now</DialogTitle>
           <DialogDescription>
-            This is the only time the key is shown. The backend stores a hash, not the key —
-            once this dialog closes there is no way to recover it and you will have to mint a
-            new one.
+            This is the only time the key is shown. The backend stores a hash, not the key — once
+            this dialog closes there is no way to recover it and you will have to mint a new one.
           </DialogDescription>
         </DialogHeader>
 

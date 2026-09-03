@@ -6,6 +6,7 @@ import { useCreateComparison, useComparisons, useDeleteComparison } from '@/api/
 import { useNarrativeFeed } from '@/api/queries/narratives';
 import type { ComparisonOut, EntityType } from '@/api/types';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { PageShell } from '@/components/page';
 import { EmptyState, ErrorState, SkeletonCard } from '@/components/states';
 import { EntityTable } from '@/components/table/EntityTable';
 import { Badge } from '@/components/ui/badge';
@@ -87,17 +88,16 @@ export default function NetworkEntryPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col">
-      <FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters} />
-
-      <div className="space-y-5 p-4">
+    <PageShell
+      title="Network"
+      description="How this conversation spreads between accounts. Pick what to draw — everything, one platform, one narrative, or only the accounts a detector flagged — and the graph opens on that scope."
+      filterBar={<FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters} />}
+    >
+      <div className="space-y-6">
         <section className="space-y-2">
-          <div>
-            <h1 className="text-sm font-semibold">Select entities</h1>
-            <p className="text-2xs text-muted-foreground">
-              Each slot opens the graph on its own scope, carrying the filters above with it.
-            </p>
-          </div>
+          <h2 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+            Choose a starting point
+          </h2>
 
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
             <BuilderSlot
@@ -228,7 +228,11 @@ export default function NetworkEntryPage() {
               rowKey={(c) => c.id}
               rowActions={(c) => (
                 <div className="flex justify-end gap-1">
-                  <Button size="sm" variant="outline" onClick={() => visualize({ comparisonId: c.id })}>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => visualize({ comparisonId: c.id })}
+                  >
                     View
                   </Button>
                   <Button
@@ -256,7 +260,7 @@ export default function NetworkEntryPage() {
           label: `#${n.display_id} ${truncate(n.title.text ?? 'Untitled', 40)}`,
         }))}
       />
-    </div>
+    </PageShell>
   );
 }
 
@@ -274,7 +278,7 @@ function BuilderSlot({
   disabled?: boolean;
 }) {
   return (
-    <section className="flex flex-col gap-2 rounded-lg border border-border bg-card p-3">
+    <section className="flex flex-col gap-2 card-surface p-4">
       <div>
         <h3 className="text-xs font-semibold">{title}</h3>
         <p className="mt-0.5 text-2xs text-muted-foreground">{description}</p>
@@ -312,9 +316,7 @@ function PlatformSlot({
               id={`platform-${p}`}
               checked={picked.includes(p)}
               onCheckedChange={() =>
-                setPicked((prev) =>
-                  prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p],
-                )
+                setPicked((prev) => (prev.includes(p) ? prev.filter((x) => x !== p) : [...prev, p]))
               }
             />
             <Label htmlFor={`platform-${p}`} className="cursor-pointer normal-case tracking-normal">

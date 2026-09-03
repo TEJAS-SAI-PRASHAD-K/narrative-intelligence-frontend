@@ -10,6 +10,7 @@ import {
 } from '@/api/queries/narratives';
 import { CohortsPanel } from '@/components/cohorts/CohortsPanel';
 import { FilterBar } from '@/components/filters/FilterBar';
+import { PageShell } from '@/components/page';
 import { FreshnessBar } from '@/components/freshness/FreshnessBar';
 import { ScoreExplainer } from '@/components/score/ScoreExplainer';
 import { EmptyState, ErrorState, SkeletonCard } from '@/components/states';
@@ -49,7 +50,10 @@ const LIST_DEFAULTS = { sort: 'priority', limit: 25 } as const;
  */
 export default function NarrativeFeedPage() {
   const { projectId, slug } = useProjectContext();
-  const { filters, list, patchFilters, resetFilters, setList } = useFilters(projectId, LIST_DEFAULTS);
+  const { filters, list, patchFilters, resetFilters, setList } = useFilters(
+    projectId,
+    LIST_DEFAULTS,
+  );
   const { toast } = useToast();
   const { track } = useJobs();
 
@@ -64,10 +68,7 @@ export default function NarrativeFeedPage() {
   const updateNarrative = useUpdateNarrative();
   const score = useNarrativeScore(scoreFor ?? undefined, scoreFor !== null);
 
-  const items = useMemo(
-    () => feed.data?.pages.flatMap((p) => p.items) ?? [],
-    [feed.data],
-  );
+  const items = useMemo(() => feed.data?.pages.flatMap((p) => p.items) ?? [], [feed.data]);
   const total = feed.data?.pages[0]?.total ?? null;
 
   const rename = useCallback(
@@ -105,7 +106,9 @@ export default function NarrativeFeedPage() {
         toast({
           title: 'Rename failed',
           description:
-            err instanceof ApiError ? `${err.message} (${err.code} · ${err.requestId ?? 'no request id'})` : String(err),
+            err instanceof ApiError
+              ? `${err.message} (${err.code} · ${err.requestId ?? 'no request id'})`
+              : String(err),
           variant: 'error',
         });
       }
@@ -134,40 +137,42 @@ export default function NarrativeFeedPage() {
   }
 
   return (
-    <div className="flex min-h-full flex-col">
-      <FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters}>
-        <div className="flex items-center gap-1.5">
-          <Label htmlFor="feed-sort" className="whitespace-nowrap">
-            Sort
-          </Label>
-          <Select
-            value={list.sort ?? 'priority'}
-            onValueChange={(v) => setList({ sort: v, cursor: undefined })}
-          >
-            <SelectTrigger id="feed-sort" className="w-32">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {SORTS.map((s) => (
-                <SelectItem key={s.value} value={s.value}>
-                  {s.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </FilterBar>
-
-      <div className="space-y-3 p-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <h1 className="text-sm font-semibold">Narratives</h1>
-          {total !== null && (
-            <span className="text-2xs text-muted-foreground">{formatCount(total)} total</span>
-          )}
-          <div className="flex-1" />
-          <ExportDialog projectId={projectId} slug={slug} filters={filters} />
-        </div>
-
+    <PageShell
+      title="Narratives"
+      description="The stories running through this corpus. Posts saying the same thing are grouped into one narrative, ranked by how much attention each needs."
+      meta={
+        total !== null && (
+          <span className="text-2xs text-muted-foreground">{formatCount(total)} total</span>
+        )
+      }
+      actions={<ExportDialog projectId={projectId} slug={slug} filters={filters} />}
+      filterBar={
+        <FilterBar filters={filters} onChange={patchFilters} onReset={resetFilters}>
+          <div className="flex items-center gap-1.5">
+            <Label htmlFor="feed-sort" className="whitespace-nowrap">
+              Sort
+            </Label>
+            <Select
+              value={list.sort ?? 'priority'}
+              onValueChange={(v) => setList({ sort: v, cursor: undefined })}
+            >
+              <SelectTrigger id="feed-sort" className="w-32">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {SORTS.map((s) => (
+                  <SelectItem key={s.value} value={s.value}>
+                    {s.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </FilterBar>
+      }
+      bodyClassName="gap-4"
+    >
+      <div className="space-y-4">
         {freshness.data && (
           <FreshnessBar
             freshness={freshness.data}
@@ -273,6 +278,6 @@ export default function NarrativeFeedPage() {
           scoreFor ? `narrative ${items.find((n) => n.id === scoreFor)?.display_id ?? ''}` : ''
         }
       />
-    </div>
+    </PageShell>
   );
 }

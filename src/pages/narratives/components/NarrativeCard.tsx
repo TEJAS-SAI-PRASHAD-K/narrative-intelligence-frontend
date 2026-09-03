@@ -34,7 +34,7 @@ export function NarrativeCard({
   const title = narrative.title.text ?? 'Untitled narrative';
 
   return (
-    <Card className="transition-colors hover:border-primary/40">
+    <Card className="card-interactive hover:border-primary/40">
       <CardHeader className="gap-2">
         <div className="flex flex-wrap items-start gap-x-2 gap-y-1">
           <Badge variant="muted" className="mt-0.5 shrink-0 font-mono">
@@ -44,7 +44,7 @@ export function NarrativeCard({
           <AiPill provenance={narrative.title.provenance} />
         </div>
 
-        <h3 className="text-sm font-semibold leading-snug">
+        <h3 className="text-[0.9375rem] font-semibold leading-snug tracking-tight">
           <InlineEditTitle value={title} onSave={onRename} isSaving={isRenaming} label="Rename narrative" />
         </h3>
 
@@ -60,7 +60,7 @@ export function NarrativeCard({
       </CardHeader>
 
       <CardContent className="space-y-2.5">
-        <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-muted-foreground">
+        <dl className="flex flex-wrap items-center gap-1.5 text-2xs">
           <Meta label="Dates" value={formatDateRange(narrative.date_start, narrative.date_end, tz)} />
           <Meta label="Engagement" value={formatCount(narrative.engagement_total)} />
           <Meta label="Posts" value={formatCount(narrative.post_count)} />
@@ -94,17 +94,27 @@ export function NarrativeCard({
           </div>
         )}
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={onOpenCohorts} className="px-0 text-muted-foreground">
-            <Users className="h-3 w-3" aria-hidden="true" />
-            Cohorts
-          </Button>
+        <div className="rounded-lg border border-border/70 bg-surface-sunken/60 p-3">
+          <div className="mb-2.5 flex items-center gap-2">
+            <h4 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+              Risk signals
+            </h4>
+            <div className="flex-1" />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onOpenCohorts}
+              className="h-6 px-1.5 text-muted-foreground"
+            >
+              <Users className="h-3 w-3" aria-hidden="true" />
+              Cohorts
+            </Button>
+          </div>
+          <RiskScorecard scorecard={narrative.scorecard} onExplain={onExplainScore} />
         </div>
 
-        <RiskScorecard scorecard={narrative.scorecard} onExplain={onExplainScore} />
-
         <div className="flex items-center gap-3 pt-0.5">
-          <Button size="sm" variant="outline" asChild>
+          <Button size="sm" asChild>
             <Link to={`/p/${slug}/narratives/${narrative.id}`}>Open narrative</Link>
           </Button>
           {narrative.cluster_id !== null && narrative.cluster_id !== undefined && (
@@ -120,9 +130,9 @@ export function NarrativeCard({
 
 function Meta({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center gap-1">
-      <dt>{label}</dt>
-      <dd className="tabular text-foreground">{value}</dd>
+    <div className="flex items-center gap-1.5 rounded-md bg-muted/40 px-2 py-1">
+      <dt className="text-muted-foreground">{label}</dt>
+      <dd className="tabular font-medium text-foreground">{value}</dd>
     </div>
   );
 }
