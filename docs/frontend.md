@@ -106,7 +106,7 @@ pretends the data refreshed is a lie to the analyst.
   mutation ──▶ 202 JobAccepted {job_id, status_url, kind}
                     │
                     ▼
-           JobStore.track(accepted)          ── row appears in <JobTray>
+           JobStore.track(accepted)          ── row appears in <JobsSheet>
                     │
                     ▼
         GET /api/v1/jobs/{id}  ── 1s → 2s → 5s backoff
@@ -179,3 +179,60 @@ dash for all of them, `<NotMeasured>` attaches the reason, and chart series drop
 unmeasured points (`connectNulls={false}`) rather than plotting them at zero. A gap
 means "we do not know"; a dip to zero means "nothing happened", and only one of those
 is honest.
+
+---
+
+## 6. The shell and the page frame
+
+Every screen renders inside one frame, and the frame is defined once.
+
+**Navigation** lives in `src/layout/navItems.ts`, not in the sidebar's JSX. The rail it
+replaced linked 8 of the app's 18 routes -- cohorts, domains, media, alerts and the key
+manager were reachable only by typing a URL, and nothing failed because nothing was
+checking. `navItems.test.ts` is that check: a route in `App.tsx` must appear in
+`NAV_SECTIONS` or in `NON_NAV_ROUTES` with a written reason, and neither list may name a
+route that no longer exists.
+
+The grouping follows the five questions in `docs/demo.md`: **Investigate** (narratives,
+drivers, cohorts, domains, network, media), **Produce** (curate, reports, alerts),
+**System** (sources, jobs, keys), with Overview above them as the landing screen.
+
+`<Sidebar>` is 224px labelled or 56px icon-only, toggled by an explicit control and
+remembered in `localStorage`. **Width never changes on hover.** The old rail widened on
+`:hover`, and because it was a flex child the entire page slid sideways under the
+pointer. Below `lg` the same nav renders in a sheet.
+
+**`<PageShell>`** (`src/components/page/`) fixes the header order for every route:
+
+```
+breadcrumb → title + meta → description → actions
+─────────────────────────────────────────────────
+filter bar   (sticky, optional)
+body
+```
+
+`description` is required. It is the one sentence saying what question the screen
+answers, and it is why a stranger can open any route and know where they are. Before it
+existed, `h1` was `text-sm` -- the same size and weight as body text -- and sat above the
+filter bar on five routes and below it on six.
+
+**Spacing and type.** One gutter (`PAGE_GUTTER`, `px-4 lg:px-6`), so headings, filters
+and content share a left edge with the sidebar. Vertical rhythm on 8px: `space-y-6`
+between sections, `space-y-3` inside a card. Three type levels and no more: page title
+`text-xl/600`, section heading `text-2xs` uppercase muted, body `text-xs`.
+
+**Filters have one home.** Platform and narrative used to be dropdowns in the top bar,
+which put a Platform picker on the API keys page where it filtered nothing. They now sit
+in `<AdvancedFilters>` with every other filter; the top bar shows what is *in force*, as
+removable chips derived from `activeChips(spec)`.
+
+**Nothing floats over content.** The job tray was fixed to the bottom-right corner and
+covered the network legend and table footers. It is now a sheet opened from the
+sidebar's Jobs item, which carries a live count of running jobs.
+
+**Failures are addressed to the analyst.** `explainError()` translates the API's
+`error.code` into what happened, what it means and what to do; the backend's own message
+and the `code`/`status`/`request_id` line move into `<TechnicalDetails>`, still
+selectable. A code with no translation falls through to the backend's message, because a
+generic sentence would be less informative than the real one. Pinned by
+`explainError.test.ts`.

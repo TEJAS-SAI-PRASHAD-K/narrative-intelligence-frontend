@@ -35,9 +35,18 @@ analyst should never have to re-find "Authors".
 Six fields, always, in one order: **Priority · Bot-Like · Anomalous · Toxicity ·
 Compass Risk · Negative Sentiment**. Identical label styling on every surface.
 
-Any field in `missing[]` renders "not measured" with a tooltip naming the contract
-field — never `0`, never a zero-height bar. `fusion_score` is printed with `/ 100`
-because it does not share the scale of the six signals above it.
+A fixed grid — three across, or two in a narrow sidebar. It was a wrapping flex row,
+which gave the six fields a different width and a different wrap point on every surface,
+so the same card read as a different shape depending on where it appeared.
+
+**Every** label carries a tooltip saying what the signal measures and on what scale, not
+only the ones that are missing: six labels in small caps over six numbers, half of them
+percentages and half of them bands, is not self-explanatory to anyone who did not build
+the scoring pass.
+
+Any field in `missing[]` renders "not measured" — never `0`, never a zero-height bar.
+`fusion_score` is printed with `/ 100` because it does not share the scale of the six
+signals above it.
 
 *Consumed by:* Narrative feed card, narrative detail sidebar, curate, kitchen sink.
 
@@ -154,9 +163,15 @@ text, the advanced builder, one removable chip per active filter, "Reset all", a
 `src/components/table/EntityTable.tsx`
 
 Generic. Column picker persisted to `localStorage`; sortable headers that write to the
-URL; sticky header; virtualised above 200 rows; skeleton rows on load; empty and error
-states built in. Clickable rows are real `role="button"` + `tabIndex` + Enter/Space, so
-the table is usable without a mouse.
+URL; virtualised above 200 rows; skeleton rows on load; empty and error states built in.
+Clickable rows are real `role="button"` + `tabIndex` + Enter/Space, so the table is
+usable without a mouse.
+
+Overflow behaves one way everywhere: the header sticks on vertical scroll, the identity
+column sticks on horizontal scroll (with the row's hover and selected states following
+it), and an edge fade appears on whichever side has content off-screen. A wide table used
+to end in a bare horizontal scrollbar under the page, which reads as a layout defect
+rather than as "there is more here".
 
 *Consumed by:* drivers, cohorts (page and panel), domains, comparisons, reports, alerts,
 keys, jobs, graph inspect, narrative authors.
@@ -171,12 +186,16 @@ product exists to detect.
 
 *Consumed by:* overview, feed, drivers, narrative detail, cohorts page.
 
-### `<JobTray>` + `JobStore`
+### `<JobsSheet>` + `JobStore`
 `src/jobs/`
 
-Docked bottom-right, global. One row per job: kind, progress, elapsed, cancel. Polls
-`/jobs/{id}` at 1s backing off to 5s; on success invalidates only that kind's query
-families and toasts with a "view" link; on failure shows the error and `request_id`.
+A panel opened from the sidebar's Jobs item, which carries a live count of running jobs.
+One row per job: kind, progress, elapsed, cancel. Polls `/jobs/{id}` at 1s backing off to
+5s; on success invalidates only that kind's query families and toasts with a "view" link;
+on failure shows the error and `request_id`.
+
+It was a tray fixed to the bottom-right corner. Making a 202 visible was right; sitting
+on top of the network legend and every table footer, with no way to move it, was not.
 
 *Consumed by:* every 202 in the app.
 
@@ -189,13 +208,32 @@ makes a coordinated cluster look isolated — the exact wrong error for this pro
 
 *Consumed by:* network graph, kitchen sink.
 
-### `<EmptyState>` · `<ErrorState>` · `Skeleton*`
+### `<PageShell>`
+`src/components/page/PageShell.tsx`
+
+The frame every route renders inside, with the header order fixed at the component
+rather than the call site: breadcrumb → title + meta → description → actions → sticky
+filter bar → body. `title` and `description` are both required; the description is the
+sentence that tells a first-time reader what the screen is for.
+
+`titleSlot` replaces the title's rendered content while keeping its `h1` and its
+typography — used only by narrative detail, whose title is editable in place.
+
+*Consumed by:* every page under `src/pages/` except the full-screen graph and the
+project picker, which own their layouts.
+
+### `<EmptyState>` · `<ErrorState>` · `<TechnicalDetails>` · `Skeleton*`
 `src/components/states/`
 
 Three states, on every async surface, shipped in the same commit as the happy path.
-`ErrorState` always shows the backend's `error.code`, HTTP status and `request_id` as
-selectable text, and explains the fix for auth failures specifically. Empty never shares
-styling with error: "no rows matched" is a result, not a failure.
+Empty never shares styling with error: "no rows matched" is a result, not a failure.
+
+`ErrorState` leads with `explainError()`'s plain-language translation of the backend's
+`error.code` — what happened, what it means for this screen, what to do next. The
+backend's own message and the `code` / HTTP status / `request_id` line sit inside
+`<TechnicalDetails>`, one click away and still selectable, because a bug report has to
+quote them. An untranslated code falls back to the backend's message rather than to a
+vaguer sentence.
 
 *Consumed by:* every page.
 

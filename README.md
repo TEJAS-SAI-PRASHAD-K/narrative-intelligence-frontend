@@ -132,10 +132,10 @@ Rules that hold now:
 src/
   api/          schema.d.ts (generated) · client.ts · keys.ts · queries/*
   lib/          filters.ts (the URL contract) · format.ts (the null contract) · tokens.ts
-  components/   ui/ (Radix) · risk/ · ai/ · score/ · compass/ · kpi/ · table/ ·
-                filters/ · cohorts/ · charts/ · states/ · __fixtures__/
-  jobs/         JobStore.tsx · JobTray.tsx
-  layout/       AppLayout · IconRail · TopBar · useProject
+  components/   ui/ (Radix) · page/ (PageShell) · risk/ · ai/ · score/ · compass/ ·
+                kpi/ · table/ · filters/ · cohorts/ · charts/ · states/ · __fixtures__/
+  jobs/         JobStore.tsx · JobsSheet.tsx
+  layout/       AppLayout · Sidebar · navItems · TopBar · useProject
   pages/        one directory per route group
 ```
 
@@ -145,7 +145,7 @@ Four rules the code enforces, each documented where it lives:
    the only read/write path. Copy any address bar and a colleague sees the same view.
 2. **`null` is not zero.** Not-measured renders `—` with a reason, never `0`, never a
    zero-height bar. `src/lib/format.ts`.
-3. **Nothing that returns `202` is done.** Every enqueue goes to the job tray, which
+3. **Nothing that returns `202` is done.** Every enqueue goes to the jobs panel, which
    polls and invalidates only what that job kind touched. `src/jobs/`.
 4. **Types are generated.** `schema.d.ts` is the contract. A hand-written interface
    duplicating a backend schema is a bug; CI fails on drift.
