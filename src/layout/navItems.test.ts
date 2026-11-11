@@ -7,7 +7,7 @@ import { allNavItems, NAV_SECTIONS, NON_NAV_ROUTES, navPath } from './navItems';
  * The guard that keeps the navigation honest.
  *
  * Before the sidebar existed, `App.tsx` registered 18 routes and the rail linked 8 of
- * them: cohorts, domains, media, alerts and the key manager were reachable only by
+ * them: cohorts, domains, alerts and the key manager were reachable only by
  * typing a URL. Nothing failed, because nothing was checking. This test is that check
  * -- a new page must appear in `NAV_SECTIONS` or be listed in `NON_NAV_ROUTES` with a
  * reason, and neither list may name a route that no longer exists.

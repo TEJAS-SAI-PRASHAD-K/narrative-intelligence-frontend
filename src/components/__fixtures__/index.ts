@@ -14,6 +14,7 @@ import type {
   CompassContext,
   GraphStats,
   KpiBundle,
+  LanguageCoverage,
   Metric,
   NarrativeFreshness,
   NarrativeScorecard,
@@ -54,6 +55,33 @@ export const metricNoDelta: Metric = {
   delta_pct: null,
 };
 
+/**
+ * A mixed corpus: English fully scored, Hindi scored only by the multilingual modules,
+ * a language with no coverage at all, and records with no language.
+ */
+export const languageCoverage: LanguageCoverage[] = [
+  {
+    lang: 'en',
+    total: 716,
+    scored: { toxicity: 716, anomaly: 716, misinfo: 716, stance: 716, sentiment: 716, emotion: 716 },
+  },
+  {
+    lang: 'hi',
+    total: 233,
+    scored: { toxicity: 0, anomaly: 233, misinfo: 233, stance: 0, sentiment: 0, emotion: 0 },
+  },
+  {
+    lang: 'te',
+    total: 4,
+    scored: { toxicity: 0, anomaly: 4, misinfo: 0, stance: 0, sentiment: 0, emotion: 0 },
+  },
+  {
+    lang: null,
+    total: 1,
+    scored: { toxicity: 0, anomaly: 1, misinfo: 0, stance: 0, sentiment: 0, emotion: 0 },
+  },
+];
+
 export const kpiBundle: KpiBundle = {
   posts: metricMeasured,
   engagements: metricNull,
@@ -80,6 +108,7 @@ export const kpiBundle: KpiBundle = {
   window_end: '2026-08-30T00:00:00Z',
   tz: 'UTC',
   comparison_window: '2026-03-03 – 2026-06-01',
+  language_coverage: languageCoverage,
 };
 
 export const scorecardComplete: NarrativeScorecard = {

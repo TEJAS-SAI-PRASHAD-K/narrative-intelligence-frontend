@@ -569,60 +569,6 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
-    "/api/v1/media/check": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get?: never;
-        put?: never;
-        /** Submit media for a deepfake check */
-        post: operations["submit_media_check_api_v1_media_check_post"];
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/media/check/{job_id}": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /**
-         * Deepfake check result
-         * @description Carries a plain-language `explanation` alongside the confidence. A bare number is not an acceptable answer to 'is this video fake', and the UI spec says so explicitly.
-         */
-        get: operations["get_media_check_api_v1_media_check__job_id__get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/media/checks": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        /** Deepfake check history */
-        get: operations["list_media_checks_api_v1_media_checks_get"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/narratives": {
         parameters: {
             query?: never;
@@ -1743,14 +1689,6 @@ export interface components {
              */
             total_cohort_count: number;
         };
-        /** Body_submit_media_check_api_v1_media_check_post */
-        Body_submit_media_check_api_v1_media_check_post: {
-            /**
-             * File
-             * @description Image or video. 100MB ceiling.
-             */
-            file: string;
-        };
         /** Citation */
         Citation: {
             /** Char End */
@@ -2564,7 +2502,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "ingest.fetch" | "ingest.load" | "nlp.embed" | "nlp.cluster" | "nlp.summarize" | "score.posts" | "score.authors" | "score.fusion" | "graph.build_edges" | "graph.communities" | "graph.layout" | "compass.generate" | "domain.enrich" | "media.deepfake" | "alerts.evaluate" | "reports.render" | "maint.purge_uploads";
+            kind: "ingest.fetch" | "ingest.load" | "nlp.embed" | "nlp.cluster" | "nlp.summarize" | "score.posts" | "score.authors" | "score.fusion" | "graph.build_edges" | "graph.communities" | "graph.layout" | "compass.generate" | "domain.enrich" | "alerts.evaluate" | "reports.render" | "maint.purge_uploads";
             /** Params */
             params?: {
                 [key: string]: unknown;
@@ -2606,6 +2544,11 @@ export interface components {
             comparison_window?: string | null;
             emotions: components["schemas"]["Metric"];
             engagements: components["schemas"]["Metric"];
+            /**
+             * Language Coverage
+             * @description Per-language record count and per-module scored count, largest language first. Null only when the response was built by a producer that does not compute it.
+             */
+            language_coverage?: components["schemas"]["LanguageCoverage"][] | null;
             posts: components["schemas"]["Metric"];
             sentiment: components["schemas"]["Metric"];
             /**
@@ -2617,6 +2560,29 @@ export interface components {
             window_end?: string | null;
             /** Window Start */
             window_start?: string | null;
+        };
+        /**
+         * LanguageCoverage
+         * @description How many records of one language each scoring module actually scored.
+         */
+        LanguageCoverage: {
+            /**
+             * Lang
+             * @description Language code as stored on the record. Null groups records with no language.
+             */
+            lang: string | null;
+            /**
+             * Scored
+             * @description Per scoring module, records in this language with a non-null score. A null score is not scored; a measured zero is.
+             */
+            scored: {
+                [key: string]: number;
+            };
+            /**
+             * Total
+             * @description Records in this language that match the filters.
+             */
+            total: number;
         };
         /** LayoutRequest */
         LayoutRequest: {
@@ -2634,73 +2600,6 @@ export interface components {
             narrative_id?: string | null;
             /** Project Id */
             project_id: string;
-        };
-        /** MediaCheckOut */
-        MediaCheckOut: {
-            /** Completed At */
-            completed_at?: string | null;
-            /**
-             * Confidence
-             * @description Calibrated probability for the reported verdict, not the raw logit.
-             */
-            confidence?: number | null;
-            /** Error */
-            error?: string | null;
-            /**
-             * Explanation
-             * @description Plain-language account of what the model saw and how much weight it deserves. Required on a completed check: a bare number is not an acceptable answer to this question.
-             */
-            explanation?: string | null;
-            /** Face Detected */
-            face_detected?: boolean | null;
-            /** Filename */
-            filename?: string | null;
-            /** Frames Analyzed */
-            frames_analyzed?: number | null;
-            /** Job Id */
-            job_id: string;
-            /**
-             * Limitations
-             * @description Known failure modes bearing on this specific check -- compression, resolution, no face found, out-of-distribution generator.
-             */
-            limitations?: string[];
-            /**
-             * Manipulation Type
-             * @description e.g. 'face_swap', 'reenactment', 'none_detected'.
-             */
-            manipulation_type?: string | null;
-            /**
-             * Media Type
-             * @description MIME type detected from magic bytes.
-             */
-            media_type?: string | null;
-            /** Model */
-            model?: string | null;
-            /** Model Version */
-            model_version?: string | null;
-            /** Post Id */
-            post_id?: string | null;
-            /**
-             * Retention
-             * @description {'deletes_at', 'retention_hours'}. Uploaded media is imagery of real people and is purged on a timer; the API states when.
-             */
-            retention?: {
-                [key: string]: unknown;
-            };
-            /** Size Bytes */
-            size_bytes?: number | null;
-            /**
-             * Status
-             * @enum {string}
-             */
-            status: "pending" | "running" | "succeeded" | "failed" | "cancelled";
-            /**
-             * Submitted At
-             * Format: date-time
-             */
-            submitted_at: string;
-            /** Verdict */
-            verdict?: ("likely_manipulated" | "possibly_manipulated" | "likely_authentic" | "inconclusive") | null;
         };
         /**
          * Metric
@@ -3222,22 +3121,6 @@ export interface components {
             };
             /** Items */
             items: components["schemas"]["JobOut"][];
-            /** Next Cursor */
-            next_cursor?: string | null;
-            /** Total */
-            total?: number | null;
-        };
-        /** PageResponse[MediaCheckOut] */
-        PageResponse_MediaCheckOut_: {
-            /**
-             * Filters Applied
-             * @description The filter spec that produced these rows, echoed so a surprising number is debuggable.
-             */
-            filters_applied?: {
-                [key: string]: unknown;
-            };
-            /** Items */
-            items: components["schemas"]["MediaCheckOut"][];
             /** Next Cursor */
             next_cursor?: string | null;
             /** Total */
@@ -5454,109 +5337,6 @@ export interface operations {
             };
         };
     };
-    submit_media_check_api_v1_media_check_post: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-API-Key"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody: {
-            content: {
-                "multipart/form-data": components["schemas"]["Body_submit_media_check_api_v1_media_check_post"];
-            };
-        };
-        responses: {
-            /** @description Successful Response */
-            202: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["JobAccepted"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    get_media_check_api_v1_media_check__job_id__get: {
-        parameters: {
-            query?: never;
-            header?: {
-                "X-API-Key"?: string | null;
-            };
-            path: {
-                job_id: string;
-            };
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["MediaCheckOut"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
-    list_media_checks_api_v1_media_checks_get: {
-        parameters: {
-            query?: {
-                /** @description Opaque cursor from the previous response's `next_cursor`. */
-                cursor?: string | null;
-                limit?: number;
-            };
-            header?: {
-                "X-API-Key"?: string | null;
-            };
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description Successful Response */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["PageResponse_MediaCheckOut_"];
-                };
-            };
-            /** @description Validation Error */
-            422: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/json": components["schemas"]["HTTPValidationError"];
-                };
-            };
-        };
-    };
     list_narratives_api_v1_narratives_get: {
         parameters: {
             query: {
@@ -6690,6 +6470,8 @@ export interface operations {
         parameters: {
             query: {
                 sort?: string;
+                /** @description Only posts whose `skip_reasons` contain exactly this string, for example `misinfo:unsupported_language`. Exact match, not a prefix. */
+                skip_reason?: string | null;
                 /** @description Project uuid or slug. Required everywhere. */
                 project_id: string;
                 /** @description Inclusive lower bound, UTC. */

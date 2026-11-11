@@ -23,6 +23,7 @@ import { useFilters } from '@/lib/useFilters';
 import { ConceptsPanel } from './components/ConceptsPanel';
 import { HighRiskRail } from './components/HighRiskRail';
 import { KpiDrilldown } from './components/KpiDrilldown';
+import { LanguageCoveragePanel } from './components/LanguageCoveragePanel';
 
 const INTERVALS: TimeseriesInterval[] = ['1h', '6h', '1d', '7d'];
 const GROUP_BYS: TimeseriesGroupBy[] = ['none', 'platform', 'narrative', 'cohort', 'source_detail'];
@@ -96,6 +97,8 @@ export default function OverviewPage() {
               onDrilldown={narrativeScoped ? (slice) => setDrilldown(slice) : undefined}
             />
           )}
+
+          {kpis.data && <LanguageCoveragePanel coverage={kpis.data.language_coverage} />}
 
           {narrativeScoped && (
             <p className="rounded-md border border-primary/30 bg-primary/5 px-2.5 py-1.5 text-2xs text-muted-foreground">

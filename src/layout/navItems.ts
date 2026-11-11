@@ -2,7 +2,6 @@ import {
   Bell,
   FileBarChart,
   Globe,
-  Image,
   KeyRound,
   LayoutDashboard,
   ListChecks,
@@ -18,7 +17,7 @@ import type { LucideIcon } from 'lucide-react';
 /**
  * The navigation model, declared once.
  *
- * `IconRail` used to link 8 of the app's 18 routes; cohorts, domains, media, alerts
+ * `IconRail` used to link 8 of the app's 18 routes; cohorts, domains, alerts
  * and the key manager were reachable only by deep link or by digging through the gear
  * menu. Declaring the model here -- rather than inline in the rail's JSX -- is what
  * lets `navItems.test.ts` assert that every route in `App.tsx` is either navigable or
@@ -97,12 +96,6 @@ export const NAV_SECTIONS: NavSection[] = [
         label: 'Network',
         Icon: Network,
         hint: 'How it spreads — replies, reposts and co-posting between accounts.',
-      },
-      {
-        path: '/p/:projectSlug/media',
-        label: 'Media check',
-        Icon: Image,
-        hint: 'Check an image or video against known copies and manipulation signals.',
       },
     ],
   },

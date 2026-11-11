@@ -14,6 +14,7 @@ type S = components['schemas'];
 // --- primitives seen on nearly every screen -------------------------------
 export type Metric = S['Metric'];
 export type KpiBundle = S['KpiBundle'];
+export type LanguageCoverage = S['LanguageCoverage'];
 export type AiProvenance = S['AiProvenance'];
 export type GeneratedText = S['GeneratedText'];
 export type ScoreComponent = S['ScoreComponent'];
@@ -103,7 +104,6 @@ export type AlertRuleOut = S['AlertRuleOut'];
 export type AlertRuleCreate = S['AlertRuleCreate'];
 export type AlertRuleUpdate = S['AlertRuleUpdate'];
 export type AlertCondition = S['AlertCondition'];
-export type MediaCheckOut = S['MediaCheckOut'];
 export type ApiKeyOut = S['ApiKeyOut'];
 export type ApiKeyCreated = S['ApiKeyCreated'];
 export type ApiKeyCreate = S['ApiKeyCreate'];

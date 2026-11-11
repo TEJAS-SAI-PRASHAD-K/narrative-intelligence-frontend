@@ -13,7 +13,6 @@ import type {
   IngestRunOut,
   JobAccepted,
   JobOut,
-  MediaCheckOut,
   PageResponse,
   ReportCreate,
   ReportOut,
@@ -60,34 +59,6 @@ export function useIngestRuns(projectId: string | undefined, list: ListSpec = { 
 export function useStartIngest() {
   return useMutation({
     mutationFn: (body: IngestRequest) => api.post<JobAccepted>('/ingest', body),
-  });
-}
-
-// --- media -----------------------------------------------------------------
-
-export function useMediaChecks(list: ListSpec = { limit: 50 }) {
-  return useQuery({
-    queryKey: qk.media.list(list),
-    queryFn: () => api.get<PageResponse<MediaCheckOut>>('/media/checks', { limit: list.limit }),
-  });
-}
-
-export function useMediaCheck(jobId: string | undefined, enabled = true) {
-  return useQuery({
-    queryKey: qk.media.check(jobId ?? ''),
-    queryFn: () => api.get<MediaCheckOut>(`/media/check/${encodeURIComponent(jobId!)}`),
-    enabled: enabled && Boolean(jobId),
-  });
-}
-
-/** 202, multipart. The verdict is only readable once the job finishes. */
-export function useSubmitMediaCheck() {
-  return useMutation({
-    mutationFn: (file: File) => {
-      const form = new FormData();
-      form.append('file', file);
-      return api.postForm<JobAccepted>('/media/check', form);
-    },
   });
 }
 

@@ -111,12 +111,6 @@ export const qk = {
     detail: (id: string) => ['jobs', 'detail', id] as const,
   },
 
-  media: {
-    all: ['media'] as const,
-    list: (list?: ListSpec) => ['media', 'list', listPart(list)] as const,
-    check: (jobId: string) => ['media', 'check', jobId] as const,
-  },
-
   reports: {
     all: ['reports'] as const,
     list: (projectId: string, list?: ListSpec) =>
@@ -163,8 +157,8 @@ export const JOB_KIND_INVALIDATIONS: Record<string, readonly (readonly string[])
   'graph.layout': [qk.network.all],
   'compass.generate': [qk.narratives.all],
   'domain.enrich': [qk.domains.all],
-  'media.deepfake': [qk.media.all],
   'alerts.evaluate': [qk.alerts.all],
   'reports.render': [qk.reports.all],
-  'maint.purge_uploads': [qk.media.all],
+  // Sweeps files on disk only; no cached query reads them.
+  'maint.purge_uploads': [],
 };

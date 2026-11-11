@@ -128,7 +128,7 @@ invalidates nothing, rather than clearing the cache on a guess.
 
 Routes that enqueue: `/ingest`, `/narratives/recluster`,
 `/narratives/{id}/compass/regenerate`, `/network/layout`, `/domains/{d}/enrich`,
-`/media/check`, `/reports`.
+`/reports`.
 
 **Optimistic writes and job invalidation can race.** The narrative feed is the case
 that matters: a recluster finishing invalidates the feed while an analyst is mid-rename.
@@ -187,14 +187,14 @@ is honest.
 Every screen renders inside one frame, and the frame is defined once.
 
 **Navigation** lives in `src/layout/navItems.ts`, not in the sidebar's JSX. The rail it
-replaced linked 8 of the app's 18 routes -- cohorts, domains, media, alerts and the key
+replaced linked 8 of the app's 18 routes -- cohorts, domains, alerts and the key
 manager were reachable only by typing a URL, and nothing failed because nothing was
 checking. `navItems.test.ts` is that check: a route in `App.tsx` must appear in
 `NAV_SECTIONS` or in `NON_NAV_ROUTES` with a written reason, and neither list may name a
 route that no longer exists.
 
 The grouping follows the five questions in `docs/demo.md`: **Investigate** (narratives,
-drivers, cohorts, domains, network, media), **Produce** (curate, reports, alerts),
+drivers, cohorts, domains, network), **Produce** (curate, reports, alerts),
 **System** (sources, jobs, keys), with Overview above them as the landing screen.
 
 `<Sidebar>` is 224px labelled or 56px icon-only, toggled by an explicit control and

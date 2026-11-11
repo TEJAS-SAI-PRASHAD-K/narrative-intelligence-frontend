@@ -76,7 +76,6 @@ function humanKind(kind: string): string {
     'graph.layout': 'Compute graph layout',
     'compass.generate': 'Generate Compass context',
     'domain.enrich': 'Enrich domain',
-    'media.deepfake': 'Deepfake check',
     'alerts.evaluate': 'Evaluate alert rules',
     'reports.render': 'Render report',
     'maint.purge_uploads': 'Purge uploads',
