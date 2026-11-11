@@ -24,7 +24,6 @@ const DomainDetailPage = lazy(() => import('@/pages/domains/DomainDetailPage'));
 const AuthorPage = lazy(() => import('@/pages/authors/AuthorPage'));
 const NetworkEntryPage = lazy(() => import('@/pages/network/NetworkEntryPage'));
 const NetworkGraphPage = lazy(() => import('@/pages/network/NetworkGraphPage'));
-const MediaPage = lazy(() => import('@/pages/media/MediaPage'));
 const ReportsPage = lazy(() => import('@/pages/reports/ReportsPage'));
 const AlertsPage = lazy(() => import('@/pages/alerts/AlertsPage'));
 const SourcesPage = lazy(() => import('@/pages/sources/SourcesPage'));
@@ -92,7 +91,6 @@ export function App() {
                       <Route path="/p/:projectSlug/domains/:domain" element={<DomainDetailPage />} />
                       <Route path="/p/:projectSlug/authors/:authorId" element={<AuthorPage />} />
                       <Route path="/p/:projectSlug/network" element={<NetworkEntryPage />} />
-                      <Route path="/p/:projectSlug/media" element={<MediaPage />} />
                       <Route path="/p/:projectSlug/reports" element={<ReportsPage />} />
                       <Route path="/p/:projectSlug/alerts" element={<AlertsPage />} />
                       <Route path="/p/:projectSlug/sources" element={<SourcesPage />} />

@@ -62,7 +62,7 @@ so a new call site must look the field up in the contract. `riskLevelFromScore` 
 `riskLevelFrom100` are separate functions and neither infers the scale from the value.
 
 *Consumed by:* everywhere a score appears — scorecard, drivers, domains, cohorts,
-authors, graph inspect, media verdict.
+authors, graph inspect.
 
 ### `<NotMeasured reason>`
 `src/components/risk/NotMeasured.tsx`

@@ -7,7 +7,7 @@ implied, is written down here instead of being worked around silently.
 Each entry says what was observed, what the UI does now, and what Phase 4 would need
 to change for the workaround to go away.
 
-Entries are numbered in one continuous sequence (observations 1-6, gaps 7-11); code
+Entries are numbered in one continuous sequence (observations 1-6, gaps 7-10); code
 comments reference them as `contract-gaps #N`.
 
 ---
@@ -187,13 +187,3 @@ the restrictive direction hides functionality the analyst actually has.
 
 **Phase 4 action.** A `GET /keys/self` returning `{prefix, scopes}` for the presented
 key would make the requirement implementable in about ten lines.
-
-### 11. `GET /media/checks` is not project-scoped
-
-**Observed.** Every other list route requires `project_id`. `/media/checks` accepts
-only `cursor` and `limit`, so the media history is global rather than per project.
-
-**UI behaviour.** The media page states that the history is account-wide, so an
-analyst does not read another project's checks as belonging to this one.
-
-**Phase 4 action.** Add an optional `project_id` filter.

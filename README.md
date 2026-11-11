@@ -25,7 +25,7 @@ Then open <http://localhost:5173>. Which backend it talks to is set by `.env.loc
 
 ### Choosing a backend
 
-**A — `DEMO_MODE=1` fixtures.** No database, no Docker, no key. Every one of the 69
+**A — `DEMO_MODE=1` fixtures.** No database, no Docker, no key. Every one of the 66
 routes answers with schema-valid data and stable ids. This is what the dashboard was
 built against and what `docs/demo.md` assumes.
 

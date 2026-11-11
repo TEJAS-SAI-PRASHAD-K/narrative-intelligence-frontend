@@ -17,7 +17,7 @@ Two terminals.
 DEMO_MODE=1 .venv/bin/uvicorn app.main:app --port 8001
 ```
 
-Serves all 69 routes from fixtures. Ids are stable across restarts, so the links below
+Serves all 66 routes from fixtures. Ids are stable across restarts, so the links below
 keep working.
 
 **2 — the dashboard, from this repo:**

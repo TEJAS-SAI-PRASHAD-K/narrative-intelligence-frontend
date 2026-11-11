@@ -103,7 +103,6 @@ export type AlertRuleOut = S['AlertRuleOut'];
 export type AlertRuleCreate = S['AlertRuleCreate'];
 export type AlertRuleUpdate = S['AlertRuleUpdate'];
 export type AlertCondition = S['AlertCondition'];
-export type MediaCheckOut = S['MediaCheckOut'];
 export type ApiKeyOut = S['ApiKeyOut'];
 export type ApiKeyCreated = S['ApiKeyCreated'];
 export type ApiKeyCreate = S['ApiKeyCreate'];
