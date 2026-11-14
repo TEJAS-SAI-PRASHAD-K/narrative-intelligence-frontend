@@ -4,6 +4,25 @@ All notable changes to this project are documented here.
 Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); this project
 adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Contract sync for unmeasured engagement.** The backend now sends `null` where no
+  platform measured engagement, not `0`. `openapi.json` and `src/api/schema.d.ts` carry
+  the new nullable fields: `TimeseriesPoint.value`, the `TimeseriesPoint.series` values,
+  `AuthorTimelinePoint.engagement`, `TimelinePoint.engagement` and
+  `NarrativeSummary.engagement_total`.
+- **Unmeasured engagement is a gap, never zero.** Timeseries and narrative timeline
+  charts leave a null point as a gap. In grouped mode a missing series key and a null
+  value are both gaps. A chart where every engagement point is null shows "No platform in
+  this view measures engagement." and draws no line.
+- **Counts that can be null show an em dash.** The narrative card, the narrative detail
+  stats, the drivers table and the author timeline use `MeasuredCount`. Its title and
+  aria text read "Not measured".
+- `sumMeasured` and `compareNullsLast` in `src/lib/format.ts` skip null in sums and sort
+  null last. A sum of only null values is null.
+
 ## [0.2.0] — 2026-08-30
 
 Phase 5: the analyst dashboard. Every one of the 69 Phase 4 routes now has a screen or
