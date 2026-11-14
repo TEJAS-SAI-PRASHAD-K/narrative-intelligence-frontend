@@ -18,10 +18,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   value are both gaps. A chart where every engagement point is null shows "No platform in
   this view measures engagement." and draws no line.
 - **Counts that can be null show an em dash.** The narrative card, the narrative detail
-  stats, the drivers table and the author timeline use `MeasuredCount`. Its title and
-  aria text read "Not measured".
-- `sumMeasured` and `compareNullsLast` in `src/lib/format.ts` skip null in sums and sort
-  null last. A sum of only null values is null.
+  stats, the drivers table and the author timeline use `MeasuredCount`. Its hover and
+  screen-reader text read "Not measured".
+- **Isolated points keep a dot.** A measured point between two gaps draws a small dot,
+  so real data does not look absent.
+- **`NotMeasured` is reachable by keyboard.** The dash is hidden from screen readers and
+  the reason is read as text.
 
 ## [0.2.0] — 2026-08-30
 

@@ -17,7 +17,7 @@ import { formatCount, formatDateTime, formatPct } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { ChartTooltip } from './ChartTooltip';
 import { CHART_COLOURS } from './palette';
-import { allUnmeasured, flattenTimeseries, NO_ENGAGEMENT_NOTE } from './series';
+import { allUnmeasured, flattenTimeseries, isolatedDot, NO_ENGAGEMENT_NOTE } from './series';
 
 /**
  * One time series. Two of these share a `syncId`, which is what gives the Overview
@@ -137,7 +137,7 @@ export function TimeseriesChart({
               fill={s.colour}
               fillOpacity={stacked ? 0.45 : 0.12}
               strokeWidth={1.5}
-              dot={false}
+              dot={isolatedDot(rows, s.key, s.colour)}
               // Off, deliberately: a gap is an unmeasured bucket, not a zero.
               connectNulls={false}
               isAnimationActive={false}

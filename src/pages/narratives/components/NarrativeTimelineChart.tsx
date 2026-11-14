@@ -11,12 +11,12 @@ import {
 } from 'recharts';
 import type { NarrativeTimeline } from '@/api/types';
 import { ChartTooltip } from '@/components/charts/ChartTooltip';
-import { CHART_COLOURS, seriesColour } from '@/components/charts/palette';
+import { CHART_COLOURS } from '@/components/charts/palette';
 import { EmptyState, ErrorState, SkeletonChart } from '@/components/states';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
-import { allUnmeasured, NO_ENGAGEMENT_NOTE } from '@/components/charts/series';
-import { formatCount, formatDateTime, platformLabel } from '@/lib/format';
+import { buildTimelineView, isolatedDot, NO_ENGAGEMENT_NOTE } from '@/components/charts/series';
+import { formatCount, formatDateTime } from '@/lib/format';
 
 /**
  * The narrative's own timeline. With Cross-Platform on, `by_platform` splits into one
@@ -77,38 +77,7 @@ export function NarrativeTimelineChart({
     );
   }
 
-  const platforms = crossPlatform
-    ? [
-        ...new Set(
-          timeline.points.flatMap((p) => Object.keys(p.by_platform ?? {})),
-        ),
-      ].sort()
-    : [];
-
-  const rows = timeline.points.map((p) => {
-    const row: Record<string, string | number | null> = {
-      bucket: p.bucket_start,
-      posts: p.post_count,
-      engagement: p.engagement ?? null,
-    };
-    for (const platform of platforms) {
-      const v = p.by_platform?.[platform];
-      // Explicit null: this platform contributed nothing measurable to this bucket.
-      row[platform] = v === undefined || v === null ? null : v;
-    }
-    return row;
-  });
-
-  const engagementUnmeasured = allUnmeasured(rows, ['engagement']);
-  const series =
-    platforms.length > 0
-      ? platforms.map((p) => ({ key: p, label: platformLabel(p), colour: seriesColour(p) }))
-      : [
-          { key: 'posts', label: 'Posts', colour: seriesColour('posts') },
-          ...(engagementUnmeasured
-            ? []
-            : [{ key: 'engagement', label: 'Engagement', colour: seriesColour('engagement') }]),
-        ];
+  const { rows, series, showNote } = buildTimelineView(timeline, crossPlatform);
 
   return (
     <div className="card-surface p-4">
@@ -157,14 +126,14 @@ export function NarrativeTimelineChart({
               fill={s.colour}
               fillOpacity={crossPlatform ? 0.4 : 0.12}
               strokeWidth={1.5}
-              dot={false}
+              dot={isolatedDot(rows, s.key, s.colour)}
               connectNulls={false}
               isAnimationActive={false}
             />
           ))}
         </AreaChart>
       </ResponsiveContainer>
-      {platforms.length === 0 && engagementUnmeasured && (
+      {showNote && (
         <p className="mt-1 text-2xs text-muted-foreground">{NO_ENGAGEMENT_NOTE}</p>
       )}
     </div>

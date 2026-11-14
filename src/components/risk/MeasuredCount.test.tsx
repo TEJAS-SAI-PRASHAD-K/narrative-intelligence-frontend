@@ -10,7 +10,17 @@ describe('MeasuredCount', () => {
   it('renders null as the dash with "Not measured" as the aria text, never 0', () => {
     const html = renderHtml(<MeasuredCount value={null} />);
     expect(html).toContain('—');
-    expect(html).toContain('aria-label="Not measured"');
+    expect(html).toContain('<span aria-hidden="true">—</span>');
+    expect(html).toContain('<span class="sr-only">Not measured</span>');
+    expect(html).toContain('tabindex="0"');
+    expect(html).not.toContain('>0<');
+  });
+});
+
+describe('MeasuredCount with undefined', () => {
+  it('renders as not measured', () => {
+    const html = renderHtml(<MeasuredCount value={undefined} />);
+    expect(html).toContain('—');
     expect(html).not.toContain('>0<');
   });
 });
