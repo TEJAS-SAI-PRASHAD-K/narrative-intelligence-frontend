@@ -10,6 +10,8 @@
 
 export const NOT_MEASURED = '—';
 export const NOT_MEASURED_HINT = 'Not measured on this platform.';
+/** Title and aria text for a count that no platform in the view measured. */
+export const NOT_MEASURED_LABEL = 'Not measured';
 
 export function isMeasured(value: number | null | undefined): value is number {
   return value !== null && value !== undefined && Number.isFinite(value);
@@ -22,6 +24,28 @@ const plain = new Intl.NumberFormat('en-US');
 export function formatCount(value: number | null | undefined): string {
   if (!isMeasured(value)) return NOT_MEASURED;
   return Math.abs(value) >= 10_000 ? compact.format(value) : plain.format(value);
+}
+
+/**
+ * Adds counts and skips `null`. Returns `null` when no input is measured, because the
+ * sum of nothing measured is unknown, not zero.
+ */
+export function sumMeasured(values: ReadonlyArray<number | null | undefined>): number | null {
+  let total: number | null = null;
+  for (const v of values) {
+    if (isMeasured(v)) total = (total ?? 0) + v;
+  }
+  return total;
+}
+
+/** Comparator for a descending sort on a nullable number. `null` always sorts last. */
+export function compareNullsLast(a: number | null | undefined, b: number | null | undefined): number {
+  const am = isMeasured(a);
+  const bm = isMeasured(b);
+  if (am && bm) return b - a;
+  if (am) return -1;
+  if (bm) return 1;
+  return 0;
 }
 
 export function formatExactCount(value: number | null | undefined): string {

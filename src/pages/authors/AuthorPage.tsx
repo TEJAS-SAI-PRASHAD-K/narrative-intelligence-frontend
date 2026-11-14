@@ -6,6 +6,7 @@ import {
   useAuthorScore,
   useAuthorTimeline,
 } from '@/api/queries/entities';
+import { MeasuredCount } from '@/components/risk/MeasuredCount';
 import { OriginalPost } from '@/components/post/OriginalPost';
 import { ScoreExplainer } from '@/components/score/ScoreExplainer';
 import { PageShell } from '@/components/page';
@@ -187,7 +188,9 @@ export default function AuthorPage() {
                   <tr key={p.bucket_start} className="border-t border-border">
                     <td className="py-1 tabular">{formatDateTime(p.bucket_start, filters.tz)}</td>
                     <td className="py-1 text-right tabular">{formatCount(p.post_count)}</td>
-                    <td className="py-1 text-right tabular">{formatCount(p.engagement)}</td>
+                    <td className="py-1 text-right">
+                      <MeasuredCount value={p.engagement} />
+                    </td>
                     <td className="py-1 text-right tabular">
                       {p.mean_toxicity === null || p.mean_toxicity === undefined
                         ? '—'

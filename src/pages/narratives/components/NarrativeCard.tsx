@@ -6,6 +6,7 @@ import { RiskScorecard } from '@/components/risk/RiskScorecard';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { MeasuredCount } from '@/components/risk/MeasuredCount';
 import { formatCount, formatDateRange, platformLabel } from '@/lib/format';
 import { InlineEditTitle } from './InlineEditTitle';
 
@@ -62,7 +63,7 @@ export function NarrativeCard({
       <CardContent className="space-y-2.5">
         <dl className="flex flex-wrap items-center gap-1.5 text-2xs">
           <Meta label="Dates" value={formatDateRange(narrative.date_start, narrative.date_end, tz)} />
-          <Meta label="Engagement" value={formatCount(narrative.engagement_total)} />
+          <Meta label="Engagement" value={<MeasuredCount value={narrative.engagement_total} />} />
           <Meta label="Posts" value={formatCount(narrative.post_count)} />
           <Meta label="Authors" value={formatCount(narrative.author_count)} />
           {(narrative.platforms?.length ?? 0) > 0 && (
@@ -128,7 +129,7 @@ export function NarrativeCard({
   );
 }
 
-function Meta({ label, value }: { label: string; value: string }) {
+function Meta({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-center gap-1.5 rounded-md bg-muted/40 px-2 py-1">
       <dt className="text-muted-foreground">{label}</dt>

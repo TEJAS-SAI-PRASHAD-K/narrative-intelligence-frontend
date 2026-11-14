@@ -15,6 +15,7 @@ import { CHART_COLOURS, seriesColour } from '@/components/charts/palette';
 import { EmptyState, ErrorState, SkeletonChart } from '@/components/states';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { allUnmeasured, NO_ENGAGEMENT_NOTE } from '@/components/charts/series';
 import { formatCount, formatDateTime, platformLabel } from '@/lib/format';
 
 /**
@@ -88,7 +89,7 @@ export function NarrativeTimelineChart({
     const row: Record<string, string | number | null> = {
       bucket: p.bucket_start,
       posts: p.post_count,
-      engagement: p.engagement,
+      engagement: p.engagement ?? null,
     };
     for (const platform of platforms) {
       const v = p.by_platform?.[platform];
@@ -98,12 +99,15 @@ export function NarrativeTimelineChart({
     return row;
   });
 
+  const engagementUnmeasured = allUnmeasured(rows, ['engagement']);
   const series =
     platforms.length > 0
       ? platforms.map((p) => ({ key: p, label: platformLabel(p), colour: seriesColour(p) }))
       : [
           { key: 'posts', label: 'Posts', colour: seriesColour('posts') },
-          { key: 'engagement', label: 'Engagement', colour: seriesColour('engagement') },
+          ...(engagementUnmeasured
+            ? []
+            : [{ key: 'engagement', label: 'Engagement', colour: seriesColour('engagement') }]),
         ];
 
   return (
@@ -160,6 +164,9 @@ export function NarrativeTimelineChart({
           ))}
         </AreaChart>
       </ResponsiveContainer>
+      {platforms.length === 0 && engagementUnmeasured && (
+        <p className="mt-1 text-2xs text-muted-foreground">{NO_ENGAGEMENT_NOTE}</p>
+      )}
     </div>
   );
 }

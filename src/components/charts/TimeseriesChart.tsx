@@ -16,7 +16,8 @@ import { InfoTip } from '@/components/ui/tooltip';
 import { formatCount, formatDateTime, formatPct } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { ChartTooltip } from './ChartTooltip';
-import { CHART_COLOURS, seriesColour } from './palette';
+import { CHART_COLOURS } from './palette';
+import { allUnmeasured, flattenTimeseries, NO_ENGAGEMENT_NOTE } from './series';
 
 /**
  * One time series. Two of these share a `syncId`, which is what gives the Overview
@@ -27,12 +28,6 @@ import { CHART_COLOURS, seriesColour } from './palette';
  * breaks rather than dropping to zero. A gap reads as "we do not know"; a dip to zero
  * reads as "nothing happened", and only one of those is honest.
  */
-
-export interface SeriesDef {
-  key: string;
-  label: string;
-  colour: string;
-}
 
 export function TimeseriesChart({
   response,
@@ -58,7 +53,7 @@ export function TimeseriesChart({
   /** Legend isolation: clicking a legend item shows only that series. */
   const [isolated, setIsolated] = useState<string | null>(null);
 
-  const { rows, series } = useMemo(() => flatten(response), [response]);
+  const { rows, series } = useMemo(() => flattenTimeseries(response), [response]);
 
   if (error && !isLoading) {
     return <ErrorState error={error} title={`Could not load ${title.toLowerCase()}`} onRetry={onRetry} />;
@@ -71,6 +66,19 @@ export function TimeseriesChart({
         <EmptyState
           title="No points in this window"
           description="The corpus has no matching activity for these filters and this interval."
+          className="mt-3"
+        />
+      </div>
+    );
+  }
+
+  if (allUnmeasured(rows, series.map((s) => s.key))) {
+    return (
+      <div className={cn('card-surface p-4', className)}>
+        <ChartHeader title={title} response={response} />
+        <EmptyState
+          title={response.metric === 'engagements' ? NO_ENGAGEMENT_NOTE : 'Nothing measured in this window'}
+          description="Every point is unmeasured, so the chart draws no line. It does not plot zero."
           className="mt-3"
         />
       </div>
@@ -189,57 +197,4 @@ function ChartHeader({
       </div>
     </div>
   );
-}
-
-type Row = Record<string, string | number | null>;
-
-/**
- * `TimeseriesResponse` gives either a scalar `value` per bucket (`group_by=none`) or a
- * `series` map keyed by series id. Both are flattened to one row per bucket so the
- * chart never has to branch, and a series absent from a bucket becomes an explicit
- * `null` rather than being omitted (which Recharts would render as a joined line).
- */
-function flatten(response: TimeseriesResponse | undefined): { rows: Row[]; series: SeriesDef[] } {
-  if (!response || response.points.length === 0) return { rows: [], series: [] };
-
-  const labels = response.series_labels ?? {};
-  const grouped = response.group_by !== 'none';
-
-  if (!grouped) {
-    const key = response.metric;
-    return {
-      rows: response.points.map((p) => ({ bucket: p.bucket_start, [key]: p.value })),
-      series: [{ key, label: labelFor(response.metric), colour: seriesColour(key) }],
-    };
-  }
-
-  const keys = new Set<string>();
-  for (const p of response.points) {
-    for (const k of Object.keys(p.series ?? {})) keys.add(k);
-  }
-
-  const series = [...keys]
-    .sort()
-    .map((key) => ({ key, label: labels[key] ?? key, colour: seriesColour(key) }));
-
-  const rows = response.points.map((p) => {
-    const row: Row = { bucket: p.bucket_start };
-    for (const s of series) {
-      const v = p.series?.[s.key];
-      // Explicit null: the bucket exists, this series was not measured in it.
-      row[s.key] = v === undefined || v === null ? null : v;
-    }
-    return row;
-  });
-
-  return { rows, series };
-}
-
-function labelFor(metric: string): string {
-  const map: Record<string, string> = {
-    posts: 'Posts',
-    engagements: 'Engagements',
-    authors: 'Authors',
-  };
-  return map[metric] ?? metric;
 }
