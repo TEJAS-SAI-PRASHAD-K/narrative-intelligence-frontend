@@ -1670,7 +1670,7 @@ export interface components {
              */
             bucket_start: string;
             /** Engagement */
-            engagement: number;
+            engagement: number | null;
             /** Mean Toxicity */
             mean_toxicity?: number | null;
             /** Post Count */
@@ -2705,11 +2705,8 @@ export interface components {
              * @description The human-facing 'ID: ####' the UI shows.
              */
             display_id: number;
-            /**
-             * Engagement Total
-             * @default 0
-             */
-            engagement_total: number;
+            /** Engagement Total */
+            engagement_total?: number | null;
             /** Id */
             id: string;
             /**
@@ -2883,11 +2880,8 @@ export interface components {
              * @description The human-facing 'ID: ####' the UI shows.
              */
             display_id: number;
-            /**
-             * Engagement Total
-             * @default 0
-             */
-            engagement_total: number;
+            /** Engagement Total */
+            engagement_total?: number | null;
             /** Id */
             id: string;
             /**
@@ -3769,7 +3763,7 @@ export interface components {
                 [key: string]: number;
             } | null;
             /** Engagement */
-            engagement: number;
+            engagement: number | null;
             /** Post Count */
             post_count: number;
         };
@@ -3782,10 +3776,10 @@ export interface components {
             bucket_start: string;
             /** Series */
             series?: {
-                [key: string]: number;
+                [key: string]: number | null;
             } | null;
             /** Value */
-            value: number;
+            value: number | null;
         };
         /** TimeseriesResponse */
         TimeseriesResponse: {
