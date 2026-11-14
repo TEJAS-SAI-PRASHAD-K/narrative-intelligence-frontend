@@ -10,6 +10,8 @@
 
 export const NOT_MEASURED = '—';
 export const NOT_MEASURED_HINT = 'Not measured on this platform.';
+/** Title and aria text for a count that no platform in the view measured. */
+export const NOT_MEASURED_LABEL = 'Not measured';
 
 export function isMeasured(value: number | null | undefined): value is number {
   return value !== null && value !== undefined && Number.isFinite(value);

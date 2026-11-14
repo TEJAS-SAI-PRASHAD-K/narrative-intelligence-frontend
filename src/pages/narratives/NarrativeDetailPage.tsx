@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/toast';
 import { useJobs } from '@/jobs/JobStore';
 import { useProjectContext } from '@/layout/useProjectContext';
+import { MeasuredCount } from '@/components/risk/MeasuredCount';
 import { formatCount, formatDateRange, formatDateTime, platformLabel } from '@/lib/format';
 import { useFilters } from '@/lib/useFilters';
 import { ContentHighlights } from './components/ContentHighlights';
@@ -275,7 +276,7 @@ export default function NarrativeDetailPage() {
                   label="Date range"
                   value={formatDateRange(n.date_start, n.date_end, filters.tz)}
                 />
-                <Stat label="Engagements" value={formatCount(n.engagement_total)} />
+                <Stat label="Engagements" value={<MeasuredCount value={n.engagement_total} />} />
                 <Stat label="Posts" value={formatCount(n.post_count)} />
                 <Stat label="Authors" value={formatCount(n.author_count)} />
                 {n.velocity !== null && n.velocity !== undefined && (
@@ -344,7 +345,7 @@ export default function NarrativeDetailPage() {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between gap-2">
       <dt className="text-muted-foreground">{label}</dt>

@@ -25,9 +25,10 @@ export function NotMeasured({
             'cursor-help select-none text-muted-foreground underline decoration-dotted underline-offset-2',
             className,
           )}
-          aria-label={reason ?? NOT_MEASURED_HINT}
+          tabIndex={0}
         >
-          {NOT_MEASURED}
+          <span aria-hidden="true">{NOT_MEASURED}</span>
+          <span className="sr-only">{reason ?? NOT_MEASURED_HINT}</span>
         </span>
       </TooltipTrigger>
       <TooltipContent>{reason ?? NOT_MEASURED_HINT}</TooltipContent>

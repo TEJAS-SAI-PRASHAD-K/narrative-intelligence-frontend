@@ -1,4 +1,5 @@
 import type { DriverItem } from '@/api/types';
+import { MeasuredCount } from '@/components/risk/MeasuredCount';
 import { NotMeasured } from '@/components/risk/NotMeasured';
 import { RiskDot } from '@/components/risk/RiskDot';
 import { riskLevelFromScore } from '@/components/risk/riskLevel';
@@ -54,12 +55,7 @@ export function driverColumns(
       id: 'engagement',
       header: 'Engagements',
       align: 'right',
-      cell: (d) =>
-        d.engagement_total === null || d.engagement_total === undefined ? (
-          <NotMeasured reason="Engagement is not reported for every platform." />
-        ) : (
-          <span className="tabular">{formatCount(d.engagement_total)}</span>
-        ),
+      cell: (d) => <MeasuredCount value={d.engagement_total} />,
     },
     {
       id: 'authors',
