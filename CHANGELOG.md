@@ -8,6 +8,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Hindi misinfo values name the model.** The post chip reads "Misinfo (Laya, title only)" for a
+  Hindi post whose `scoring_version` carries a `laya=` stamp, with a tooltip saying the value is a
+  separate model's rank within Hindi and not comparable with English. The language coverage panel
+  notes that the misinfo figures combine two models when Hindi and English both have scored
+  values.
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
   platform measured engagement, not `0`. `openapi.json` and `src/api/schema.d.ts` carry
   the new nullable fields: `TimeseriesPoint.value`, the `TimeseriesPoint.series` values,
