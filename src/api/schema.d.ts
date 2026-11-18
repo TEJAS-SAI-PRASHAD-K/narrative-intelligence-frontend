@@ -2393,7 +2393,7 @@ export interface components {
              * Sources
              * @description Empty means every source with credentials configured.
              */
-            sources?: ("reddit" | "mastodon" | "news" | "gdelt" | "youtube")[];
+            sources?: ("reddit" | "mastodon" | "news" | "gdelt" | "youtube" | "telegram")[];
         };
         /** IngestRunOut */
         IngestRunOut: {
@@ -3670,7 +3670,7 @@ export interface components {
              * Source
              * @enum {string}
              */
-            source: "reddit" | "mastodon" | "news" | "gdelt" | "youtube";
+            source: "reddit" | "mastodon" | "news" | "gdelt" | "youtube" | "telegram";
             /**
              * Status
              * @enum {string}
@@ -3700,7 +3700,7 @@ export interface components {
              * Source
              * @enum {string}
              */
-            source: "reddit" | "mastodon" | "news" | "gdelt" | "youtube";
+            source: "reddit" | "mastodon" | "news" | "gdelt" | "youtube" | "telegram";
         };
         /** SubsystemStatus */
         SubsystemStatus: {
