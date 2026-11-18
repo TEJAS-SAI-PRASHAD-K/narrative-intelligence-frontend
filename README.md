@@ -12,7 +12,7 @@ Recharts · Sigma.js + graphology · Zod.
 
 ## Run it
 
-Needs Node 20+ and pnpm.
+Needs Node 20+ (CI uses the version in `.nvmrc`) and pnpm (pinned in `package.json`).
 
 ```bash
 pnpm install
@@ -66,11 +66,11 @@ It refuses if an active key already exists; add `--force` to mint another. Scope
 `read` for every screen, `write` for reclustering / reports / enrichment, `admin` for
 `/settings/keys`.
 
-Controls are **not** pre-disabled by scope: the contract exposes no way for a client to
-read its own key's scopes (there is no introspection route, and `GET /keys` itself needs
-`admin`). A missing scope therefore surfaces on use, as an `ErrorState` quoting the
-backend's own message — e.g. *"This API key has scopes ['read', 'write'] and needs
-'admin'"* — with the `code` and `request_id`. See `docs/contract-gaps.md` #10.
+**Update Now**, **Regenerate** and **Export** are disabled, with a tooltip naming the
+missing `write` scope, when `GET /keys/me` reports `can_write: false`. The scopes are read
+once per session; while that lookup loads or if it fails the controls stay enabled and a
+missing scope surfaces on use, as an `ErrorState` quoting the backend's own message with
+the `code` and `request_id`. See `docs/contract-gaps.md` #10.
 
 ### What differs on the real backend
 
@@ -99,6 +99,13 @@ capabilities**. On a stock local stack:
 | `pnpm test` | Vitest |
 | `pnpm verify` | All four, in the order CI runs them (`ci` is reserved by pnpm) |
 | `pnpm sync:contract` | Copy `openapi.json` from the sibling backend repo and regenerate |
+
+### CI
+
+`.github/workflows/ci.yml` runs on pull requests and on `main`: install with
+`--frozen-lockfile`, lint, test, build (which includes the typecheck) and
+`pnpm gen:api:check`. The last step fails a change to `openapi.json` that does not come
+with a regenerated `src/api/schema.d.ts`.
 
 ---
 

@@ -18,7 +18,8 @@ import {
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
-import { formatCount, formatDate, formatDateTime, formatScore, humanizeEnum, platformLabel } from '@/lib/format';
+import { formatCount, formatDate, formatDateTime, humanizeEnum, platformLabel } from '@/lib/format';
+import { AuthorCohorts, AuthorNarratives } from './AuthorAffiliations';
 
 /**
  * Author profile as a slide-over. Opened from the drivers table, the network graph,
@@ -30,22 +31,35 @@ export function AuthorPanel({
   onOpenChange,
   tz,
   slug,
+  projectId,
 }: {
   authorId: string | null;
   onOpenChange: (open: boolean) => void;
   tz: string;
   slug: string | undefined;
+  /** Project uuid or slug; the author's cohort and narrative lists are scoped by it. */
+  projectId: string;
 }) {
   return (
     <Sheet open={authorId !== null} onOpenChange={onOpenChange}>
       <SheetContent width="wide" aria-describedby="author-panel-desc">
-        {authorId && <PanelBody authorId={authorId} tz={tz} slug={slug} />}
+        {authorId && <PanelBody authorId={authorId} tz={tz} slug={slug} projectId={projectId} />}
       </SheetContent>
     </Sheet>
   );
 }
 
-function PanelBody({ authorId, tz, slug }: { authorId: string; tz: string; slug: string | undefined }) {
+function PanelBody({
+  authorId,
+  tz,
+  slug,
+  projectId,
+}: {
+  authorId: string;
+  tz: string;
+  slug: string | undefined;
+  projectId: string;
+}) {
   const [explainerOpen, setExplainerOpen] = useState(false);
   const author = useAuthor(authorId);
   const score = useAuthorScore(authorId, explainerOpen);
@@ -89,30 +103,13 @@ function PanelBody({ authorId, tz, slug }: { authorId: string; tz: string; slug:
               Why this score?
             </Button>
 
-            {(author.data.cohorts?.length ?? 0) > 0 && (
-              <section className="space-y-1.5">
-                <h3 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
-                  Cohorts
-                </h3>
-                <div className="flex flex-wrap gap-1.5">
-                  {author.data.cohorts?.map((c) => (
-                    <Badge key={c.cohort_id} variant="outline" className="gap-1">
-                      {c.name}
-                      <span className="text-muted-foreground">
-                        {humanizeEnum(c.category)}
-                        {c.confidence !== null && c.confidence !== undefined
-                          ? ` · ${formatScore(c.confidence)}`
-                          : ''}
-                      </span>
-                      {/* Assigned by a model or by a person -- a material difference. */}
-                      <span className="text-muted-foreground">
-                        {c.assigned_by === 'analyst' ? '· analyst' : '· model'}
-                      </span>
-                    </Badge>
-                  ))}
-                </div>
-              </section>
-            )}
+            <AuthorCohorts
+              authorId={authorId}
+              projectId={projectId}
+              memberships={author.data.cohorts}
+            />
+
+            <AuthorNarratives authorId={authorId} projectId={projectId} slug={slug} />
 
             {(author.data.skip_reasons?.length ?? 0) > 0 && (
               <p className="rounded-md border border-border bg-surface-sunken px-2.5 py-2 text-2xs text-muted-foreground">

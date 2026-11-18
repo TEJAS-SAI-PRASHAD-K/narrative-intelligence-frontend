@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { writeDisabledReason } from '@/components/auth/writeAccess';
 import * as fx from '@/components/__fixtures__';
 import { AiBlock } from '@/components/ai/AiBlock';
 import { AiPill } from '@/components/ai/AiPill';
@@ -24,6 +25,11 @@ import { EntityTable } from '@/components/table/EntityTable';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TruncationBanner } from '@/components/network/TruncationBanner';
+import {
+  AuthorCohortsView,
+  AuthorNarrativesView,
+} from '@/pages/authors/components/AuthorAffiliations';
+import type { ListState } from '@/pages/authors/components/listState';
 import { CompassModule } from '@/components/compass/CompassModule';
 import { ApiError } from '@/api/client';
 
@@ -34,6 +40,19 @@ import { ApiError } from '@/api/client';
  * null-metric, missing-score-component, truncated-graph, AI-edited-by-user. If a
  * state is hard to reach in a live corpus, it is reachable here.
  */
+function listState<T>(items: T[]): ListState<T> {
+  return {
+    items,
+    total: items.length,
+    isLoading: false,
+    error: null,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    onLoadMore: () => undefined,
+    onRetry: () => undefined,
+  };
+}
+
 export default function KitchenSinkPage() {
   const [explainerOpen, setExplainerOpen] = useState(false);
 
@@ -70,7 +89,7 @@ export default function KitchenSinkPage() {
 
       <Section
         title="RiskScorecard"
-        note="Six fields, always, in one order. Fields in missing[] render “not measured” — nowhere does the card render 0."
+        note="Seven fields, always, in one order. Fields in missing[] render “not measured” — nowhere does the card render 0."
       >
         <div className="grid gap-3 md:grid-cols-2">
           <Labelled label="Complete">
@@ -78,7 +97,7 @@ export default function KitchenSinkPage() {
               <RiskScorecard scorecard={fx.scorecardComplete} />
             </div>
           </Labelled>
-          <Labelled label='missing: ["authenticity", "bot_like", "toxicity"]'>
+          <Labelled label='coordinated_author_ratio and bot_like null, missing: ["authenticity", "bot_like", "toxicity"]'>
             <div className="card-surface p-4">
               <RiskScorecard
                 scorecard={fx.scorecardMissing}
@@ -160,6 +179,19 @@ export default function KitchenSinkPage() {
       </Section>
 
       <Section
+        title="Author cohorts and narratives"
+        note="The two lists in the author slide-over: loaded, empty, failed, and a narrative whose engagement was not measured."
+      >
+        <AuthorCohortsView state={listState(fx.authorCohorts)} />
+        <AuthorNarrativesView state={listState(fx.authorNarratives)} slug="demo" />
+        <AuthorCohortsView state={listState([])} />
+        <AuthorNarrativesView
+          state={{ ...listState([]), error: new ApiError({ code: 'author_not_found', message: 'Author not found', status: 404 }) }}
+          slug="demo"
+        />
+      </Section>
+
+      <Section
         title="CompassModule"
         note="Citations rendered inline at their character spans, and the explicit could-not-source state."
       >
@@ -173,10 +205,21 @@ export default function KitchenSinkPage() {
           onRegenerate={() => undefined}
           onFeedback={() => undefined}
         />
+        <CompassModule
+          context={fx.compassInsufficient}
+          onRegenerate={() => undefined}
+          onFeedback={() => undefined}
+          writeDisabledReason={writeDisabledReason(fx.readOnlyKey)}
+        />
       </Section>
 
       <Section title="FreshnessBar" note="Clustered results are never refreshed silently.">
         <FreshnessBar freshness={fx.freshnessStale} onUpdate={() => undefined} />
+        <FreshnessBar
+          freshness={fx.freshnessStale}
+          onUpdate={() => undefined}
+          writeDisabledReason={writeDisabledReason(fx.readOnlyKey)}
+        />
         <FreshnessBar
           freshness={{ ...fx.freshnessStale, status: 'running', age_human: '2 minutes ago' }}
           onUpdate={() => undefined}
@@ -246,6 +289,13 @@ export default function KitchenSinkPage() {
           rowKey={(r) => r.id}
           sort="count"
           onSortChange={() => undefined}
+          pagination={{
+            hasNextPage: true,
+            isFetchingNextPage: false,
+            onLoadMore: () => undefined,
+            total: 1240,
+            noun: 'entities',
+          }}
         />
       </Section>
 

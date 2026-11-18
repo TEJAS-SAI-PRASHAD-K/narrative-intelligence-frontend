@@ -51,6 +51,7 @@ export type AuthorScoreExplanation = S['AuthorScoreExplanation'];
 export type AuthorTimeline = S['AuthorTimeline'];
 export type AuthorGroupOut = S['AuthorGroupOut'];
 export type CohortOut = S['CohortOut'];
+export type NamedRef = S['NamedRef'];
 export type CohortMembership = S['CohortMembership'];
 
 // --- overview --------------------------------------------------------------
@@ -107,6 +108,7 @@ export type AlertCondition = S['AlertCondition'];
 export type ApiKeyOut = S['ApiKeyOut'];
 export type ApiKeyCreated = S['ApiKeyCreated'];
 export type ApiKeyCreate = S['ApiKeyCreate'];
+export type ApiKeySelf = S['ApiKeySelf'];
 export type HealthResponse = S['HealthResponse'];
 export type ReadinessResponse = S['ReadinessResponse'];
 

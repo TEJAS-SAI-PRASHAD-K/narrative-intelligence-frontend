@@ -142,6 +142,7 @@ export default function CohortsPage() {
         onOpenChange={(open) => !open && setAuthorId(null)}
         tz={filters.tz}
         slug={slug}
+        projectId={projectId}
       />
     </PageShell>
   );

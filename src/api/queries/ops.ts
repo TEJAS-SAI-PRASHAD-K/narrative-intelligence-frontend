@@ -9,6 +9,7 @@ import type {
   ApiKeyCreate,
   ApiKeyCreated,
   ApiKeyOut,
+  ApiKeySelf,
   IngestRequest,
   IngestRunOut,
   JobAccepted,
@@ -182,6 +183,22 @@ export function useApiKeys() {
   return useQuery({
     queryKey: qk.keys.list(),
     queryFn: () => api.get<PageResponse<ApiKeyOut>>('/keys'),
+  });
+}
+
+/**
+ * Scopes of the key this session is using, read once. `GET /keys/me` needs no scope, so a
+ * read-only key can call it. A key's scopes only change by minting a new key, which
+ * means a new session, so the answer is never refetched. It is not retried either:
+ * on failure the write controls stay enabled and the server decides (contract-gaps #10).
+ */
+export function useKeyScopes() {
+  return useQuery({
+    queryKey: qk.keys.self(),
+    queryFn: () => api.get<ApiKeySelf>('/keys/me'),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    retry: false,
   });
 }
 

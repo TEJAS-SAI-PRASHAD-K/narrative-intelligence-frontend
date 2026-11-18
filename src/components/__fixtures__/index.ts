@@ -11,6 +11,8 @@
  */
 import type {
   AiProvenance,
+  ApiKeySelf,
+  CohortOut,
   CompassContext,
   GraphStats,
   KpiBundle,
@@ -18,6 +20,7 @@ import type {
   Metric,
   NarrativeFreshness,
   NarrativeScorecard,
+  NarrativeSummary,
   NarrativeScoreExplanation,
   PostOut,
 } from '@/api/types';
@@ -120,6 +123,7 @@ export const kpiBundle: KpiBundle = {
 
 export const scorecardComplete: NarrativeScorecard = {
   priority: 'high',
+  coordinated_author_ratio: 0.34,
   bot_like: 0.71,
   anomalous: 0.63,
   toxicity: 0.48,
@@ -134,6 +138,7 @@ export const scorecardComplete: NarrativeScorecard = {
 /** Renders "—" for authenticity, never 0. */
 export const scorecardMissing: NarrativeScorecard = {
   priority: 'medium',
+  coordinated_author_ratio: null,
   bot_like: null,
   anomalous: 0.31,
   toxicity: null,
@@ -384,3 +389,75 @@ export const graphStatsTruncated: GraphStats = {
   largest_component_size: 15_902,
   modularity: 0.71,
 };
+
+export const readOnlyKey: ApiKeySelf = {
+  id: 'key_readonly',
+  name: 'analyst laptop',
+  prefix: 'nik_ro_1',
+  scopes: ['read'],
+  effective_scopes: ['read'],
+  can_read: true,
+  can_write: false,
+  can_admin: false,
+};
+
+export const writeKey: ApiKeySelf = {
+  ...readOnlyKey,
+  id: 'key_write',
+  name: 'pipeline',
+  scopes: ['read', 'write'],
+  effective_scopes: ['read', 'write'],
+  can_write: true,
+};
+export const authorCohorts: CohortOut[] = [
+  {
+    id: 'cohort-1',
+    project_id: 'proj-demo',
+    name: 'Verified journalists',
+    description: null,
+    category: 'influence_tier',
+    author_count: 412,
+    post_pct: 3.2,
+    mean_bot_score: 0.04,
+    mean_toxicity: null,
+  },
+  {
+    id: 'cohort-2',
+    project_id: 'proj-demo',
+    name: 'Election watchers',
+    description: null,
+    category: 'political',
+    author_count: 96,
+    post_pct: null,
+    mean_bot_score: null,
+    mean_toxicity: 0.21,
+  },
+];
+
+/** The second narrative has no measured engagement: it must read "Not measured", not 0. */
+export const authorNarratives: NarrativeSummary[] = [
+  {
+    id: 'narr-1',
+    project_id: 'proj-demo',
+    display_id: 1042,
+    is_manual: false,
+    title: { text: 'Ballots were counted twice in two districts', provenance: provenanceAi },
+    summary: { text: null, provenance: provenanceAi },
+    author_count: 31,
+    post_count: 214,
+    engagement_total: 18230,
+    scorecard: scorecardComplete,
+  },
+  {
+    id: 'narr-2',
+    project_id: 'proj-demo',
+    display_id: 1043,
+    is_manual: false,
+    title: { text: null, provenance: provenanceHeuristic },
+    summary: { text: null, provenance: provenanceHeuristic },
+    author_count: 5,
+    post_count: 9,
+    engagement_total: null,
+    scorecard: scorecardMissing,
+  },
+];

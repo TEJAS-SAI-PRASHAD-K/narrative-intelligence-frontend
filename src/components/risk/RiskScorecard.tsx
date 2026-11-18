@@ -8,8 +8,9 @@ import { RiskDot } from './RiskDot';
 import { riskLevelFromBand, riskLevelFromScore } from './riskLevel';
 
 /**
- * Six fields, always, in this order:
- *   Priority · Bot-Like · Anomalous · Toxicity · Compass Risk · Negative Sentiment
+ * Seven fields, always, in this order:
+ *   Priority · Coordinated Authors · Bot-Like · Anomalous · Toxicity · Compass Risk ·
+ *   Negative Sentiment
  *
  * The order and the label styling are identical on the feed card, the detail sidebar
  * and the kitchen sink, so an analyst reads the same shape everywhere. Any field named
@@ -18,10 +19,11 @@ import { riskLevelFromBand, riskLevelFromScore } from './riskLevel';
  */
 
 type Field =
-  'priority' | 'bot_like' | 'anomalous' | 'toxicity' | 'compass_risk' | 'negative_sentiment';
+  'priority' | 'coordinated_author_ratio' | 'bot_like' | 'anomalous' | 'toxicity' | 'compass_risk' | 'negative_sentiment';
 
 const FIELD_LABEL: Record<Field, string> = {
   priority: 'Priority',
+  coordinated_author_ratio: 'Coordinated Authors',
   bot_like: 'Bot-Like',
   anomalous: 'Anomalous',
   toxicity: 'Toxicity',
@@ -31,6 +33,7 @@ const FIELD_LABEL: Record<Field, string> = {
 
 const ORDER: Field[] = [
   'priority',
+  'coordinated_author_ratio',
   'bot_like',
   'anomalous',
   'toxicity',
@@ -47,9 +50,11 @@ const ORDER: Field[] = [
  */
 const FIELD_DEFINITION: Record<Field, string> = {
   priority:
-    'How much attention this narrative needs relative to the others, as a band: high, medium or low. It is the summary of the five signals beside it.',
+    'How much attention this narrative needs relative to the others, as a band: high, medium or low. It is the summary of the signals beside it.',
+  coordinated_author_ratio:
+    'The coordination input to the fusion score: the share of this narrative’s scored authors whose coordination score is above the fusion threshold. 0% to 100%.',
   bot_like:
-    'The share of accounts in this narrative whose posting pattern a classifier scored as automated. 0% to 100%. It is a suspicion, not a finding.',
+    'The share of accounts in this narrative whose posting pattern a classifier scored as automated. 0% to 100%. Fusion does not use it: the classifier does not generalize across folds, so read it as context only.',
   anomalous:
     'How unusual this narrative’s posting pattern is against the rest of the corpus — bursts, synchronised timing, repetition. 0% to 100%.',
   toxicity:
@@ -177,6 +182,14 @@ function Value({
     return (
       <RiskDot level={riskLevelFromBand(scorecard.priority)} label={cap(scorecard.priority)} />
     );
+  }
+
+  if (field === 'coordinated_author_ratio') {
+    const ratio = scorecard.coordinated_author_ratio;
+    if (ratio === null || ratio === undefined) {
+      return <NotMeasured reason="No author in this narrative was scored for coordination." />;
+    }
+    return <RiskDot level={riskLevelFromScore(ratio)} label={formatScore(ratio)} />;
   }
 
   if (field === 'compass_risk') {

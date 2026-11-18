@@ -20,6 +20,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { WriteGate } from '@/components/auth/WriteGate';
+import { useWriteAccess } from '@/components/auth/useWriteAccess';
 import { useToast } from '@/components/ui/toast';
 import { useJobs } from '@/jobs/JobStore';
 import { activeChips, type FilterSpec } from '@/lib/filters';
@@ -57,6 +59,7 @@ export function ExportDialog({
   narrativeIds?: string[];
 }) {
   const [open, setOpen] = useState(false);
+  const { disabledReason } = useWriteAccess();
   const [template, setTemplate] = useState<ReportTemplate>('exec_summary');
   const [format, setFormat] = useState<ReportFormat>('pdf');
 
@@ -90,12 +93,14 @@ export function ExportDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          <Download className="h-3 w-3" aria-hidden="true" />
-          Export
-        </Button>
-      </DialogTrigger>
+      <WriteGate reason={disabledReason}>
+        <DialogTrigger asChild>
+          <Button variant="outline" size="sm" disabled={Boolean(disabledReason)}>
+            <Download className="h-3 w-3" aria-hidden="true" />
+            Export
+          </Button>
+        </DialogTrigger>
+      </WriteGate>
 
       <DialogContent>
         <DialogHeader>

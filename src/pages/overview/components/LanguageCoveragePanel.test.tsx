@@ -50,4 +50,11 @@ describe('LanguageCoveragePanel', () => {
     const rows = coverageRows([{ lang: 'en', total: 3, scored: { toxicity: 3, nli: 2 } }]);
     expect(rows[0]?.cells.map((c) => c.module)).toContain('nli');
   });
+
+  it('notes that misinfo combines two models when hi and en are both scored', () => {
+    expect(render(languageCoverage)).toContain('combine two models');
+    expect(render(languageCoverage.filter((e) => e.lang === 'en'))).not.toContain(
+      'combine two models',
+    );
+  });
 });
