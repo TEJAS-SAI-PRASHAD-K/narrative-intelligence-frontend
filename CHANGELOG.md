@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Drivers tables page through `next_cursor`.** `useDrivers` is an infinite query and
+  `EntityTable` takes a `pagination` prop that renders a "Load more" footer with the row
+  count and, when the backend counted, the total. The cursor stays out of the URL, so a
+  shared link starts at page one. Closes contract-gaps #8; `openapi.json` and
+  `src/api/schema.d.ts` carry `next_cursor`, `total` and `filters_applied` on
+  `DriversResponse`.
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
   platform measured engagement, not `0`. `openapi.json` and `src/api/schema.d.ts` carry
   the new nullable fields: `TimeseriesPoint.value`, the `TimeseriesPoint.series` values,

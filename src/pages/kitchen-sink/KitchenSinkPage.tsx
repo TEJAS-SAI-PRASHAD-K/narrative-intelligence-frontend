@@ -244,6 +244,13 @@ export default function KitchenSinkPage() {
           rowKey={(r) => r.id}
           sort="count"
           onSortChange={() => undefined}
+          pagination={{
+            hasNextPage: true,
+            isFetchingNextPage: false,
+            onLoadMore: () => undefined,
+            total: 1240,
+            noun: 'entities',
+          }}
         />
       </Section>
 

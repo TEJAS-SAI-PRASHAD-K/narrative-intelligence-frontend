@@ -7,7 +7,7 @@ implied, is written down here instead of being worked around silently.
 Each entry says what was observed, what the UI does now, and what Phase 4 would need
 to change for the workaround to go away.
 
-Entries are numbered in one continuous sequence (observations 1-6, gaps 7-10); code
+Entries are numbered in one continuous sequence (observations 1-6, gaps 7-10; gap 8 is closed); code
 comments reference them as `contract-gaps #N`.
 
 ---
@@ -137,20 +137,17 @@ render the raw id. No extra request is issued purely to decorate a chip.
 **Phase 4 action.** A `GET /cohorts/{id}` (and equivalents), or an `ids` filter on the
 existing list routes, would let every chip render a name on every page.
 
-### 8. `GET /drivers/*` returns no pagination cursor
+### 8. `GET /drivers/*` returned no pagination cursor (closed)
 
-**Wanted.** The drivers tables are the densest lists in the product and an analyst
-will want more than one page of them.
+**Was.** `DriversResponse` was `{definition, entity_type, items}` with no `next_cursor`
+and no `total`, so the drivers tables could show one page of 200 rows and no more.
 
-**Available.** `DriversResponse` is `{definition, entity_type, items}` — no
-`next_cursor` and no `total`, even though the route accepts `cursor` and `limit`.
+**Now.** The routes return `next_cursor`, `total` (null when the backend did not count)
+and `filters_applied`. `useDrivers` is an infinite query and `EntityTable` renders a
+"Load more" footer from its `pagination` prop. The cursor lives only in the query's page
+params: it is not in the URL or the query key, so a shared link starts at page one.
 
-**UI behaviour.** The drivers tables request a single page at `limit=200` (the contract
-maximum) and say so in the table footer rather than implying the list is complete.
-No client-side paging is faked.
-
-**Phase 4 action.** Return the standard `PageResponse` envelope from
-`/drivers/authors|hashtags|urls`.
+---
 
 ### 9. No route lists an author's cohorts or narratives by id
 
