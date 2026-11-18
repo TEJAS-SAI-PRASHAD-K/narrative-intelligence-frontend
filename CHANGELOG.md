@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The scorecard and the authors KPI show the coordination input to fusion.** Contract
+  sync adds `NarrativeScorecard.coordinated_author_ratio` and
+  `AuthorsBreakdown.coordinated_author_ratio`. `RiskScorecard` gains a Coordinated Authors
+  field and the authors drilldown gains a Coordinated authors metric (unit `ratio` renders
+  as a percentage). A null value renders `NotMeasured`. Bot-Like stays, with a note that
+  fusion does not use it.
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
   platform measured engagement, not `0`. `openapi.json` and `src/api/schema.d.ts` carry
   the new nullable fields: `TimeseriesPoint.value`, the `TimeseriesPoint.series` values,

@@ -130,10 +130,16 @@ function Engagements({ data }: { data: EngagementsBreakdown }) {
   );
 }
 
-function Authors({ data, onOpenCohorts }: { data: AuthorsBreakdown; onOpenCohorts: () => void }) {
+export function Authors({ data, onOpenCohorts }: { data: AuthorsBreakdown; onOpenCohorts: () => void }) {
   return (
     <>
-      <MetricGrid metrics={[data.total, data.bot_like, data.author_groups]} />
+      <MetricGrid
+        metrics={[data.total, data.coordinated_author_ratio, data.bot_like, data.author_groups]}
+      />
+      <p className="text-2xs text-muted-foreground">
+        Coordinated authors is the author signal the fusion score reads. Bot-like authors comes
+        from a classifier that does not generalize, so fusion does not use it.
+      </p>
       {data.top_cohorts && data.top_cohorts.length > 0 && (
         <Section title="Top cohorts">
           <HierarchyBars nodes={data.top_cohorts} />
