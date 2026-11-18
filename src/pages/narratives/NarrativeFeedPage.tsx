@@ -8,6 +8,7 @@ import {
   useUpdateNarrative,
   type NarrativeSort,
 } from '@/api/queries/narratives';
+import { useWriteAccess } from '@/components/auth/useWriteAccess';
 import { CohortsPanel } from '@/components/cohorts/CohortsPanel';
 import { FilterBar } from '@/components/filters/FilterBar';
 import { PageShell } from '@/components/page';
@@ -65,6 +66,7 @@ export default function NarrativeFeedPage() {
   const feed = useNarrativeFeed(filters, list);
   const freshness = useNarrativeFreshness(projectId);
   const recluster = useRecluster();
+  const { disabledReason } = useWriteAccess();
   const updateNarrative = useUpdateNarrative();
   const score = useNarrativeScore(scoreFor ?? undefined, scoreFor !== null);
 
@@ -178,6 +180,7 @@ export default function NarrativeFeedPage() {
             freshness={freshness.data}
             onUpdate={() => void updateNow()}
             updating={recluster.isPending}
+            writeDisabledReason={disabledReason}
           />
         )}
         {Boolean(freshness.error) && (

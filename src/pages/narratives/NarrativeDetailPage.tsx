@@ -28,6 +28,7 @@ import { MeasuredCount } from '@/components/risk/MeasuredCount';
 import { formatCount, formatDateRange, formatDateTime, platformLabel } from '@/lib/format';
 import { useFilters } from '@/lib/useFilters';
 import { ContentHighlights } from './components/ContentHighlights';
+import { useWriteAccess } from '@/components/auth/useWriteAccess';
 import { ExportDialog } from './components/ExportDialog';
 import { InlineEditTitle } from './components/InlineEditTitle';
 import { NarrativeCohortsChart } from './components/NarrativeCohortsChart';
@@ -66,6 +67,7 @@ export default function NarrativeDetailPage() {
 
   const updateNarrative = useUpdateNarrative();
   const regenerate = useRegenerateCompass();
+  const { disabledReason } = useWriteAccess();
   const feedback = useCompassFeedback();
 
   if (narrative.isLoading) {
@@ -210,6 +212,7 @@ export default function NarrativeDetailPage() {
               onRegenerate={() => void regenerateCompass()}
               onFeedback={sendFeedback}
               regenerating={regenerate.isPending}
+              writeDisabledReason={disabledReason}
             />
           )}
           {!compass.isLoading && !compass.error && !compass.data && (

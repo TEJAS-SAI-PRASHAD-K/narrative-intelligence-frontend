@@ -1,5 +1,6 @@
 import { Clock, RefreshCw } from 'lucide-react';
 import type { NarrativeFreshness } from '@/api/types';
+import { WriteGate } from '@/components/auth/WriteGate';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { InfoTip } from '@/components/ui/tooltip';
@@ -33,11 +34,14 @@ export function FreshnessBar({
   freshness,
   onUpdate,
   updating,
+  writeDisabledReason,
   className,
 }: {
   freshness: NarrativeFreshness;
   onUpdate: () => void;
   updating?: boolean;
+  /** Set when the key lacks the write scope; disables Update Now and says why. */
+  writeDisabledReason?: string | undefined;
   className?: string;
 }) {
   const running = freshness.status === 'running' || updating === true;
@@ -90,10 +94,17 @@ export function FreshnessBar({
 
       <div className="flex-1" />
 
-      <Button size="sm" variant="outline" onClick={onUpdate} disabled={running}>
-        <RefreshCw className={cn('h-3 w-3', running && 'animate-spin')} aria-hidden="true" />
-        {running ? 'Clustering…' : 'Update Now'}
-      </Button>
+      <WriteGate reason={writeDisabledReason}>
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={onUpdate}
+          disabled={running || Boolean(writeDisabledReason)}
+        >
+          <RefreshCw className={cn('h-3 w-3', running && 'animate-spin')} aria-hidden="true" />
+          {running ? 'Clustering…' : 'Update Now'}
+        </Button>
+      </WriteGate>
     </div>
   );
 }

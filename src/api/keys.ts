@@ -135,6 +135,7 @@ export const qk = {
   keys: {
     all: ['keys'] as const,
     list: () => ['keys', 'list'] as const,
+    self: () => ['keys', 'self'] as const,
   },
 } as const;
 

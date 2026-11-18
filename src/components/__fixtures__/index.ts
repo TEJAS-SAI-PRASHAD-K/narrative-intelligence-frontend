@@ -11,6 +11,7 @@
  */
 import type {
   AiProvenance,
+  ApiKeySelf,
   CompassContext,
   GraphStats,
   KpiBundle,
@@ -350,4 +351,24 @@ export const graphStatsTruncated: GraphStats = {
   component_count: 318,
   largest_component_size: 15_902,
   modularity: 0.71,
+};
+
+export const readOnlyKey: ApiKeySelf = {
+  id: 'key_readonly',
+  name: 'analyst laptop',
+  prefix: 'nik_ro_1',
+  scopes: ['read'],
+  effective_scopes: ['read'],
+  can_read: true,
+  can_write: false,
+  can_admin: false,
+};
+
+export const writeKey: ApiKeySelf = {
+  ...readOnlyKey,
+  id: 'key_write',
+  name: 'pipeline',
+  scopes: ['read', 'write'],
+  effective_scopes: ['read', 'write'],
+  can_write: true,
 };

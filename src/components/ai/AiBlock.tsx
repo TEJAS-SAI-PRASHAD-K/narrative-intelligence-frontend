@@ -1,6 +1,7 @@
 import { Check, Copy, RefreshCw, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { useState, type ReactNode } from 'react';
 import type { GeneratedText } from '@/api/types';
+import { WriteGate } from '@/components/auth/WriteGate';
 import { Button } from '@/components/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -21,6 +22,7 @@ export function AiBlock({
   onFeedback,
   onRegenerate,
   regenerating,
+  writeDisabledReason,
   shareUrl,
   children,
   className,
@@ -31,6 +33,8 @@ export function AiBlock({
   onFeedback?: ((vote: FeedbackVote) => void) | undefined;
   onRegenerate?: (() => void) | undefined;
   regenerating?: boolean;
+  /** Set when the key lacks the write scope; disables Regenerate and says why. */
+  writeDisabledReason?: string | undefined;
   shareUrl?: string;
   /** Overrides the default paragraph rendering, e.g. Compass's inline citations. */
   children?: ReactNode;
@@ -103,19 +107,21 @@ export function AiBlock({
         </Tooltip>
 
         {onRegenerate && (
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={onRegenerate}
-            disabled={regenerating}
-            aria-label="Regenerate this text"
-          >
-            <RefreshCw
-              className={cn('h-3 w-3', regenerating && 'animate-spin')}
-              aria-hidden="true"
-            />
-            {regenerating ? 'Queued' : 'Regenerate'}
-          </Button>
+          <WriteGate reason={writeDisabledReason}>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onRegenerate}
+              disabled={regenerating || Boolean(writeDisabledReason)}
+              aria-label="Regenerate this text"
+            >
+              <RefreshCw
+                className={cn('h-3 w-3', regenerating && 'animate-spin')}
+                aria-hidden="true"
+              />
+              {regenerating ? 'Queued' : 'Regenerate'}
+            </Button>
+          </WriteGate>
         )}
       </header>
 

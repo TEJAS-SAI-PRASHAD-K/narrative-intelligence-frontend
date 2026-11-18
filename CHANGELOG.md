@@ -6,6 +6,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Write controls follow the key's scopes.** The app reads `GET /keys/me` once per
+  session and disables **Update Now**, **Regenerate** and **Export** for a key without the
+  `write` scope, with a tooltip naming the missing scope. While the lookup loads or if it
+  fails the controls stay enabled and the server decides. Closes contract gap 10.
+- **Contract sync for `GET /keys/me`.** `openapi.json` and `src/api/schema.d.ts` carry the
+  new route and the `ApiKeySelf` schema.
+
 ### Changed
 
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
