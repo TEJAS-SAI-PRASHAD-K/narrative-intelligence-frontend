@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   postTelegram,
+  postHindiLaya,
   postTelegramNoReactions,
   postWithNullViews,
 } from '@/components/__fixtures__';
@@ -37,10 +38,14 @@ describe('OriginalPost engagement', () => {
 });
 
 const base = postWithNullViews;
-const scores = (scoring_version: string | null) => ({
+const scores = (
+  scoring_version: string | null,
+  model_versions: Record<string, string> | null = null,
+) => ({
   ...base.scores,
   misinfo_likelihood: 0.6,
   scoring_version,
+  model_versions,
 });
 
 describe('OriginalPost misinfo chip', () => {
@@ -50,6 +55,19 @@ describe('OriginalPost misinfo chip', () => {
     );
     expect(html).toContain('Misinfo (Laya, title only)');
     expect(html).toContain('not comparable with English misinfo values');
+  });
+
+  it('names Laya from the model_versions map of the Hindi fixture', () => {
+    const html = renderHtml(<OriginalPost post={postHindiLaya} />);
+    expect(html).toContain('Misinfo (Laya, title only)');
+  });
+
+  it('keeps the plain chip, with a note, when the map names neither model', () => {
+    const post = { ...base, lang: 'hi', scores: scores('laya=v0.2.1', { toxicity: 'v1' }) };
+    const html = renderHtml(<OriginalPost post={post} />);
+    expect(html).toContain('Misinfo');
+    expect(html).not.toContain('Laya');
+    expect(html).toContain('does not state which model');
   });
 
   it('keeps the plain chip on an unstamped Hindi post and on English', () => {

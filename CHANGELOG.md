@@ -16,6 +16,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The misinfo model comes from `model_versions`.** Contract sync adds
+  `PostScores.model_versions`, a map of module name to version stamp. `misinfoModelOf` reads
+  it first and never parses the stamp values. A Hindi post with a non-empty `laya` stamp is
+  Laya, also when `misinfo` is stamped. A post with a non-empty `misinfo` stamp is the
+  English model. Any other post with a non-empty map is a new `unknown` state: the chip has
+  no model name and a tooltip says the API does not state the producing model. This includes
+  a non-Hindi post with only a `laya` stamp. A null, absent or empty map falls back to the
+  old `laya=` parse of `scoring_version`. Current backend versions do not emit that stamp,
+  so the fallback only serves old exports. With no stamp at all, the English default stays.
+  `hasLayaStamp` is now `layaRan` and takes the scores object. The `postHindiLaya` fixture
+  and the `postWithNullViews` fixture carry `model_versions` maps. The language coverage
+  panel still infers the model mix from language coverage, because the API has no
+  aggregate map.
 - **Platform lists follow the contract.** `pnpm gen:api` also writes `src/api/sources.ts`
   from the `source` enum in `openapi.json`. The advanced filters and the network entry
   page read that list instead of keeping their own copies, so a new source needs no edit.
@@ -32,8 +45,6 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - **CI workflow.** `.github/workflows/ci.yml` runs install (frozen lockfile), lint, test,
   build and `gen:api:check` on pull requests and on `main`, so contract drift fails the
   check. Node is pinned in `.nvmrc` (22) and pnpm through `packageManager`.
-
-### Changed
 
 - **The scorecard and the authors KPI show the coordination input to fusion.** Contract
   sync adds `NarrativeScorecard.coordinated_author_ratio` and
@@ -62,7 +73,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   maps every call site to the field it renders and fails when `"hundred"` is not on a
   `0..100` field or `"unit"` on a `0..1` one, or when a new call site is not listed.
 - **Hindi misinfo values name the model.** The post chip reads "Misinfo (Laya, title only)" for a
-  Hindi post whose `scoring_version` carries a `laya=` stamp, with a tooltip saying the value is a
+  Hindi post whose `model_versions` map has a `laya` stamp, with a tooltip saying the value is a
   separate model's rank within Hindi and not comparable with English. The language coverage panel
   notes that the misinfo figures combine two models when Hindi and English both have scored
   values.

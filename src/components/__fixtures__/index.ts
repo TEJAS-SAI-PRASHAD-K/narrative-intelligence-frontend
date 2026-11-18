@@ -263,8 +263,26 @@ export const postWithNullViews: PostOut = {
     is_toxic: false,
     is_anomalous: true,
     scoring_version: 'post-scores-v2.1',
+    model_versions: { toxicity: 'v0.2.0+3f9a1c2e', misinfo: 'v0.3.0+7be41d90', anomaly: 'v0.1.0' },
     scored_at: '2026-08-27T19:10:00Z',
     skip_reasons: ['emotion_scores: model checkpoint not mounted'],
+  },
+};
+
+/** A Hindi post scored by Laya: the map carries a `laya` stamp and no `misinfo` stamp. */
+export const postHindiLaya: PostOut = {
+  ...postWithNullViews,
+  id: 'post-demo-hi',
+  lang: 'hi',
+  text: 'एक ही दावा चार मिनट के भीतर तीन नए खातों से दोहराया गया।',
+  scores: {
+    ...postWithNullViews.scores,
+    scoring_version: 'post-scores-v2.1',
+    model_versions: {
+      laya: 'v0.2.1+finetuned:laya-hi+lora@1a2b3c4d',
+      toxicity: 'v0.2.0+3f9a1c2e',
+      anomaly: 'v0.1.0',
+    },
   },
 };
 
