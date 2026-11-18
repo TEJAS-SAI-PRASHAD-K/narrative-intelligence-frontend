@@ -12,7 +12,7 @@ Recharts · Sigma.js + graphology · Zod.
 
 ## Run it
 
-Needs Node 20+ and pnpm.
+Needs Node 20+ (CI uses the version in `.nvmrc`) and pnpm (pinned in `package.json`).
 
 ```bash
 pnpm install
@@ -99,6 +99,13 @@ capabilities**. On a stock local stack:
 | `pnpm test` | Vitest |
 | `pnpm verify` | All four, in the order CI runs them (`ci` is reserved by pnpm) |
 | `pnpm sync:contract` | Copy `openapi.json` from the sibling backend repo and regenerate |
+
+### CI
+
+`.github/workflows/ci.yml` runs on pull requests and on `main`: install with
+`--frozen-lockfile`, lint, test, build (which includes the typecheck) and
+`pnpm gen:api:check`. The last step fails a change to `openapi.json` that does not come
+with a regenerated `src/api/schema.d.ts`.
 
 ---
 
