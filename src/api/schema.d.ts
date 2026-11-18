@@ -92,6 +92,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/author-groups/{group_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resolve an author group id to its name
+         * @description Minimal lookup for rendering an `author_group_id` filter as a name. Returns `{id, name}` only. An unknown id is a 404 with code `author_group_not_found`, never an empty name.
+         */
+        get: operations["get_author_group_api_v1_author_groups__group_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/author-groups/{group_id}/members": {
         parameters: {
             query?: never;
@@ -214,6 +234,26 @@ export interface paths {
         };
         /** List cohorts */
         get: operations["list_cohorts_api_v1_cohorts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cohorts/{cohort_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resolve a cohort id to its name
+         * @description Minimal lookup for rendering a `cohort_id` filter as a name. Returns `{id, name}` only. An unknown id is a 404 with code `cohort_not_found`, never an empty name. The equivalent for narratives is `GET /narratives/{narrative_id}` (its `title` is the display name) and for watchlists `GET /author-groups/{group_id}`.
+         */
+        get: operations["get_cohort_api_v1_cohorts__cohort_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -2631,6 +2671,19 @@ export interface components {
             value: number | null;
         };
         /**
+         * NamedRef
+         * @description The smallest answer to "what is this id called".
+         *
+         *     Used by the single-entity lookup routes that exist so a filter chip can show
+         *     a name instead of a raw id. Anything richer belongs on the detail route.
+         */
+        NamedRef: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+        };
+        /**
          * NarrativeCohortShare
          * @description One bar of the narrative's top-cohorts chart.
          */
@@ -4126,6 +4179,39 @@ export interface operations {
             };
         };
     };
+    get_author_group_api_v1_author_groups__group_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NamedRef"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     add_author_group_members_api_v1_author_groups__group_id__members_post: {
         parameters: {
             query?: never;
@@ -4432,6 +4518,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PageResponse_CohortOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_cohort_api_v1_cohorts__cohort_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path: {
+                cohort_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NamedRef"];
                 };
             };
             /** @description Validation Error */
