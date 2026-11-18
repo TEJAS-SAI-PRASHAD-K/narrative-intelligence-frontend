@@ -11,6 +11,7 @@ import type {
   DomainOut,
   DriversResponse,
   JobAccepted,
+  NarrativeSummary,
   PageResponse,
   PostOut,
   SimilarRequest,
@@ -23,15 +24,21 @@ import { toQueryParams, type FilterSpec, type ListSpec } from '@/lib/filters';
 
 export type DriverKind = 'authors' | 'hashtags' | 'urls';
 
+/**
+ * Drivers page by cursor. The cursor lives only in the infinite query's page params,
+ * never in the URL or the query key, so a shared link always starts at page one.
+ */
 export function useDrivers(kind: DriverKind, filters: FilterSpec, list: ListSpec) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: qk.drivers.list(kind, filters, list),
-    queryFn: () =>
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) =>
       api.get<DriversResponse>(`/drivers/${kind}`, {
         ...toQueryParams(filters),
         limit: list.limit,
-        cursor: list.cursor,
+        cursor: pageParam,
       }),
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
     enabled: Boolean(filters.project_id),
   });
 }
@@ -92,6 +99,40 @@ export function useAuthorPosts(authorId: string | undefined, list: ListSpec) {
         cursor: list.cursor,
       }),
     enabled: Boolean(authorId),
+  });
+}
+
+/**
+ * Cohorts one author belongs to. Scoped by project only: the page filters describe a
+ * view of the corpus, not which affiliations an author has.
+ */
+export function useAuthorCohorts(authorId: string | undefined, projectId: string, limit = 10) {
+  return useInfiniteQuery({
+    queryKey: qk.authors.cohorts(authorId ?? '', projectId, { limit }),
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) =>
+      api.get<PageResponse<CohortOut>>(`/authors/${encodeURIComponent(authorId!)}/cohorts`, {
+        project_id: projectId,
+        limit,
+        cursor: pageParam,
+      }),
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+    enabled: Boolean(authorId && projectId),
+  });
+}
+
+/** Narratives containing at least one post by the author, highest priority first. */
+export function useAuthorNarratives(authorId: string | undefined, projectId: string, limit = 10) {
+  return useInfiniteQuery({
+    queryKey: qk.authors.narratives(authorId ?? '', projectId, { limit }),
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) =>
+      api.get<PageResponse<NarrativeSummary>>(
+        `/authors/${encodeURIComponent(authorId!)}/narratives`,
+        { project_id: projectId, limit, cursor: pageParam },
+      ),
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+    enabled: Boolean(authorId && projectId),
   });
 }
 

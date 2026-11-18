@@ -167,7 +167,9 @@ text, the advanced builder, one removable chip per active filter, "Reset all", a
 
 Generic. Column picker persisted to `localStorage`; sortable headers that write to the
 URL; virtualised above 200 rows; skeleton rows on load; empty and error states built in.
-Clickable rows are real `role="button"` + `tabIndex` + Enter/Space, so the table is
+An optional `pagination` prop (`hasNextPage`, `isFetchingNextPage`, `onLoadMore`, `total`,
+`noun`) renders a "Load more" footer; the caller owns the cursor, so it never reaches the
+URL. Clickable rows are real `role="button"` + `tabIndex` + Enter/Space, so the table is
 usable without a mouse.
 
 Overflow behaves one way everywhere: the header sticks on vertical scroll, the identity

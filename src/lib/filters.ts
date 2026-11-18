@@ -239,18 +239,15 @@ export function filterLabel(key: FilterKey): string {
 
 /**
  * Every active filter renders a removable chip. `tz` is excluded -- it is always
- * shown on the date control itself, never as a removable chip.
+ * shown on the date control itself, never as a removable chip. Id chips carry the raw id
+ * here; `useChipLabel` swaps in the entity name once it resolves.
  */
-export function activeChips(
-  spec: FilterSpec,
-  resolveLabel?: (key: FilterKey, value: string) => string | undefined,
-): FilterChip[] {
+export function activeChips(spec: FilterSpec): FilterChip[] {
   const chips: FilterChip[] = [];
-  const label = (k: FilterKey, v: string) => resolveLabel?.(k, v) ?? v;
 
   for (const key of ARRAY_KEYS) {
     for (const value of spec[key] ?? []) {
-      chips.push({ key, value, label: `${filterLabel(key)}: ${label(key, value)}` });
+      chips.push({ key, value, label: `${filterLabel(key)}: ${value}` });
     }
   }
   if (spec.date_from) chips.push({ key: 'date_from', label: `From: ${spec.date_from}` });

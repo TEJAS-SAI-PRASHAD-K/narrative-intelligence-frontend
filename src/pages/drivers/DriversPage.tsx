@@ -26,9 +26,8 @@ const KINDS: { value: DriverKind; label: string }[] = [
 /**
  * 4.5 Conversation Drivers. Three tabs over one table and one FilterSpec.
  *
- * `DriversResponse` carries no `next_cursor` (see docs/contract-gaps.md #8), so the
- * page requests one page at the contract maximum and says so in the footer rather
- * than implying the list is complete.
+ * Pages through `next_cursor` with a load-more footer. The cursor stays inside the
+ * query, so the URL carries filters and the tab but never a page position.
  */
 const PAGE_LIMIT = 200;
 
@@ -53,18 +52,20 @@ export default function DriversPage() {
   );
   const selectedPost = selectedPosts.data?.pages[0]?.items[0];
 
-  const items = drivers.data?.items ?? [];
+  const items = useMemo(() => drivers.data?.pages.flatMap((p) => p.items) ?? [], [drivers.data]);
+  const firstPage = drivers.data?.pages[0];
+  const total = drivers.data?.pages.at(-1)?.total;
 
   return (
     <PageShell
       title="Conversation drivers"
       description="Who and what is carrying this conversation — the accounts posting most, the hashtags they use, and the links they share. Select a row to see the post behind it."
       meta={
-        drivers.data && (
+        firstPage && (
           <span className="flex items-center gap-1 text-2xs text-muted-foreground">
-            {formatCount(items.length)} rows
+            {formatCount(items.length)} rows{typeof total === 'number' && ` of ${formatCount(total)}`}
             <InfoTip label="How are drivers computed?">
-              <p>{drivers.data.definition}</p>
+              <p>{firstPage.definition}</p>
             </InfoTip>
           </span>
         )
@@ -107,23 +108,13 @@ export default function DriversPage() {
             emptyTitle={`No ${kind} match these filters`}
             emptyDescription="Widen the date range or clear a filter chip."
             maxHeight="calc(100vh - 18rem)"
-            footer={
-              items.length >= PAGE_LIMIT ? (
-                <p className="flex flex-wrap items-center gap-1 text-2xs text-muted-foreground">
-                  Showing the top {PAGE_LIMIT} rows. There may be more — narrow the date range or
-                  add a filter to be sure you are seeing everything.
-                  <InfoTip label="Why can this list be incomplete?">
-                    The drivers endpoint returns one page and no pagination cursor, so the UI cannot
-                    ask for the next one. Recorded as contract-gaps #8.
-                  </InfoTip>
-                </p>
-              ) : (
-                <p className="text-2xs text-muted-foreground">
-                  {formatCount(items.length)} row{items.length === 1 ? '' : 's'} — complete for
-                  these filters.
-                </p>
-              )
-            }
+            pagination={{
+              hasNextPage: Boolean(drivers.hasNextPage),
+              isFetchingNextPage: drivers.isFetchingNextPage,
+              onLoadMore: () => void drivers.fetchNextPage(),
+              total,
+              noun: kind,
+            }}
           />
         </div>
 
@@ -166,6 +157,7 @@ export default function DriversPage() {
         onOpenChange={(open) => !open && setAuthorId(null)}
         tz={filters.tz}
         slug={slug}
+        projectId={projectId}
       />
 
       <CohortsPanel

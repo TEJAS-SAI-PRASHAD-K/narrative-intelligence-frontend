@@ -517,6 +517,7 @@ export default function NetworkGraphPage() {
         onOpenChange={(open) => !open && setAuthorId(null)}
         tz={filters.tz}
         slug={projectSlug}
+        projectId={projectId}
       />
     </div>
   );
