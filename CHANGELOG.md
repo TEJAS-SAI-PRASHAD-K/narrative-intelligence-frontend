@@ -34,6 +34,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   from the `source` enum in `openapi.json`. The advanced filters and the network entry
   page read that list instead of keeping their own copies, so a new source needs no edit.
 
+## [0.4.0] — 2026-11-18
+
+### Changed
+
 - **Write controls follow the key's scopes.** The app reads `GET /keys/me` once per
   session and disables **Update Now**, **Regenerate** and **Export** for a key without the
   `write` scope, with a tooltip naming the missing scope. While the lookup loads or if it
