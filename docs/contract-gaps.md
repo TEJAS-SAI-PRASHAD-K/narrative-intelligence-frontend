@@ -7,11 +7,9 @@ implied, is written down here instead of being worked around silently.
 Each entry says what was observed, what the UI does now, and what Phase 4 would need
 to change for the workaround to go away.
 
-Entries are numbered in one continuous sequence (observations 1-6, gaps 7-10; gap 8 is closed); code
-comments reference them as `contract-gaps #N`.
-Entries are numbered in one continuous sequence (observations 1-6, gaps 8-10; gap 7
-is closed and its number is retired), and code comments reference them as
-`contract-gaps #N`.
+Entries are numbered in one continuous sequence (observations 1 to 6, gaps 7 to 10).
+A closed entry keeps its number and is marked closed, and code comments reference
+entries as `contract-gaps #N`.
 
 ---
 
@@ -124,25 +122,17 @@ as a frontend bug.
 
 ## Gaps — data a screen wanted and no route provides
 
-### 7. No route resolves a cohort id to a name outside a list response
+### 7. No route resolved a cohort id to a name outside a list response (closed)
 
-**Wanted.** The filter bar renders a removable chip per active filter. For
-`cohort_id`, `narrative_id` and `author_group_id` the chip should read
-`Cohort: Verified journalists`, not `Cohort: 7f3a…`.
+**Was.** The filter bar chips for `cohort_id`, `narrative_id` and `author_group_id`
+showed a raw id such as `Cohort: 7f3a…`, because names came only inside list responses.
 
-**Available.** `GET /cohorts`, `GET /narratives` and `GET /author-groups` return names
-only as part of a filtered list; there is no `GET /cohorts/{id}` and no bulk
-`?ids=` lookup.
-
-**UI behaviour.** `FilterBar` accepts a `resolveChipLabel` callback, and pages that
-already hold the relevant list pass a lookup into it. Pages that do not hold the list
-render the raw id. No extra request is issued purely to decorate a chip.
-
-**Phase 4 action.** A `GET /cohorts/{id}` (and equivalents), or an `ids` filter on the
-existing list routes, would let every chip render a name on every page.
+**Now.** `GET /cohorts/{cohort_id}` and `GET /author-groups/{group_id}` return
+`{id, name}`, and narratives use the `title` from `GET /narratives/{narrative_id}`. Each
+chip resolves its id through a cached per-id query. While loading, or on a `404`, it
+shows the short id and its `title` says why.
 
 ### 8. `GET /drivers/*` returned no pagination cursor (closed)
-### 8. `GET /drivers/*` returns no pagination cursor
 
 **Was.** `DriversResponse` was `{definition, entity_type, items}` with no `next_cursor`
 and no `total`, so the drivers tables could show one page of 200 rows and no more.
@@ -154,20 +144,20 @@ params: it is not in the URL or the query key, so a shared link starts at page o
 
 ---
 
-### 9. No route lists an author's cohorts or narratives by id
+### 9. No route lists an author's cohorts or narratives by id (closed)
 
 **Wanted.** The author slide-over shows cohort chips and the narratives an author
-touched.
+touched, by name.
 
-**Available.** `AuthorOut` carries `cohorts[]` (as `CohortMembership`, which includes
-the name) and `narratives_touched[]` (ids only).
+**Resolved.** `GET /authors/{author_id}/cohorts` returns `CohortOut` and
+`GET /authors/{author_id}/narratives` returns `NarrativeSummary`, both cursor
+paginated with `total`. An unknown author is a `404` with code `author_not_found`.
 
-**UI behaviour.** Cohort chips render from the embedded `CohortMembership.name`.
-Narrative ids render as links to the narrative detail route, labelled by id, because
-resolving each to a title would take one request per narrative.
-
-**Phase 4 action.** Include narrative titles alongside ids, as `ComparisonOut` already
-does with `narrative_titles`.
+**UI behaviour.** The slide-over and the full author page load both lists scoped by
+`project_id` only (page filters describe a view, not an author's affiliations) and
+page them with "Load more". Narratives link to their detail route by title. The
+embedded `CohortMembership` is kept only to show who assigned a cohort and its
+confidence, which the list route does not carry. The id-only workaround is gone.
 
 ### 10. No route reports the current key's scopes
 

@@ -24,6 +24,11 @@ import { EntityTable } from '@/components/table/EntityTable';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { TruncationBanner } from '@/components/network/TruncationBanner';
+import {
+  AuthorCohortsView,
+  AuthorNarrativesView,
+} from '@/pages/authors/components/AuthorAffiliations';
+import type { ListState } from '@/pages/authors/components/listState';
 import { CompassModule } from '@/components/compass/CompassModule';
 import { ApiError } from '@/api/client';
 
@@ -34,6 +39,19 @@ import { ApiError } from '@/api/client';
  * null-metric, missing-score-component, truncated-graph, AI-edited-by-user. If a
  * state is hard to reach in a live corpus, it is reachable here.
  */
+function listState<T>(items: T[]): ListState<T> {
+  return {
+    items,
+    total: items.length,
+    isLoading: false,
+    error: null,
+    hasNextPage: false,
+    isFetchingNextPage: false,
+    onLoadMore: () => undefined,
+    onRetry: () => undefined,
+  };
+}
+
 export default function KitchenSinkPage() {
   const [explainerOpen, setExplainerOpen] = useState(false);
 
@@ -156,6 +174,19 @@ export default function KitchenSinkPage() {
           isLoading={false}
           error={null}
           subjectLabel="narrative #1 (fixture)"
+        />
+      </Section>
+
+      <Section
+        title="Author cohorts and narratives"
+        note="The two lists in the author slide-over: loaded, empty, failed, and a narrative whose engagement was not measured."
+      >
+        <AuthorCohortsView state={listState(fx.authorCohorts)} />
+        <AuthorNarrativesView state={listState(fx.authorNarratives)} slug="demo" />
+        <AuthorCohortsView state={listState([])} />
+        <AuthorNarrativesView
+          state={{ ...listState([]), error: new ApiError({ code: 'author_not_found', message: 'Author not found', status: 404 }) }}
+          slug="demo"
         />
       </Section>
 

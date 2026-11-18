@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **The author slide-over and page list the author's cohorts and narratives.** Both
+  load from `GET /authors/{author_id}/cohorts` and `/narratives`, page with "Load more",
+  and have empty and error states. Narratives link to their detail page by title.
+  Closes contract gap 9. `AuthorPanel` now takes a `projectId` prop.
 - **CI workflow.** `.github/workflows/ci.yml` runs install (frozen lockfile), lint, test,
   build and `gen:api:check` on pull requests and on `main`, so contract drift fails the
   check. Node is pinned in `.nvmrc` (22) and pnpm through `packageManager`.

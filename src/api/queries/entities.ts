@@ -11,6 +11,7 @@ import type {
   DomainOut,
   DriversResponse,
   JobAccepted,
+  NarrativeSummary,
   PageResponse,
   PostOut,
   SimilarRequest,
@@ -98,6 +99,40 @@ export function useAuthorPosts(authorId: string | undefined, list: ListSpec) {
         cursor: list.cursor,
       }),
     enabled: Boolean(authorId),
+  });
+}
+
+/**
+ * Cohorts one author belongs to. Scoped by project only: the page filters describe a
+ * view of the corpus, not which affiliations an author has.
+ */
+export function useAuthorCohorts(authorId: string | undefined, projectId: string, limit = 10) {
+  return useInfiniteQuery({
+    queryKey: qk.authors.cohorts(authorId ?? '', projectId, { limit }),
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) =>
+      api.get<PageResponse<CohortOut>>(`/authors/${encodeURIComponent(authorId!)}/cohorts`, {
+        project_id: projectId,
+        limit,
+        cursor: pageParam,
+      }),
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+    enabled: Boolean(authorId && projectId),
+  });
+}
+
+/** Narratives containing at least one post by the author, highest priority first. */
+export function useAuthorNarratives(authorId: string | undefined, projectId: string, limit = 10) {
+  return useInfiniteQuery({
+    queryKey: qk.authors.narratives(authorId ?? '', projectId, { limit }),
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) =>
+      api.get<PageResponse<NarrativeSummary>>(
+        `/authors/${encodeURIComponent(authorId!)}/narratives`,
+        { project_id: projectId, limit, cursor: pageParam },
+      ),
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
+    enabled: Boolean(authorId && projectId),
   });
 }
 

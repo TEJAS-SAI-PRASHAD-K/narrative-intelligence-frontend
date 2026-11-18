@@ -157,6 +157,7 @@ export default function DriversPage() {
         onOpenChange={(open) => !open && setAuthorId(null)}
         tz={filters.tz}
         slug={slug}
+        projectId={projectId}
       />
 
       <CohortsPanel
