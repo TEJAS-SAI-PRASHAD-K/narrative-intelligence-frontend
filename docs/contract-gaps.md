@@ -8,8 +8,8 @@ Each entry says what was observed, what the UI does now, and what Phase 4 would 
 to change for the workaround to go away.
 
 Entries are numbered in one continuous sequence (observations 1 to 6, gaps 7 to 10).
-A closed entry keeps its number, or is removed and its number retired (gap 7), and
-code comments reference entries as `contract-gaps #N`.
+A closed entry keeps its number and is marked closed, and code comments reference
+entries as `contract-gaps #N`.
 
 ---
 
@@ -122,25 +122,17 @@ as a frontend bug.
 
 ## Gaps — data a screen wanted and no route provides
 
-### 7. No route resolves a cohort id to a name outside a list response
+### 7. No route resolved a cohort id to a name outside a list response (closed)
 
-**Wanted.** The filter bar renders a removable chip per active filter. For
-`cohort_id`, `narrative_id` and `author_group_id` the chip should read
-`Cohort: Verified journalists`, not `Cohort: 7f3a…`.
+**Was.** The filter bar chips for `cohort_id`, `narrative_id` and `author_group_id`
+showed a raw id such as `Cohort: 7f3a…`, because names came only inside list responses.
 
-**Available.** `GET /cohorts`, `GET /narratives` and `GET /author-groups` return names
-only as part of a filtered list; there is no `GET /cohorts/{id}` and no bulk
-`?ids=` lookup.
-
-**UI behaviour.** `FilterBar` accepts a `resolveChipLabel` callback, and pages that
-already hold the relevant list pass a lookup into it. Pages that do not hold the list
-render the raw id. No extra request is issued purely to decorate a chip.
-
-**Phase 4 action.** A `GET /cohorts/{id}` (and equivalents), or an `ids` filter on the
-existing list routes, would let every chip render a name on every page.
+**Now.** `GET /cohorts/{cohort_id}` and `GET /author-groups/{group_id}` return
+`{id, name}`, and narratives use the `title` from `GET /narratives/{narrative_id}`. Each
+chip resolves its id through a cached per-id query. While loading, or on a `404`, it
+shows the short id and its `title` says why.
 
 ### 8. `GET /drivers/*` returned no pagination cursor (closed)
-### 8. `GET /drivers/*` returns no pagination cursor
 
 **Was.** `DriversResponse` was `{definition, entity_type, items}` with no `next_cursor`
 and no `total`, so the drivers tables could show one page of 200 rows and no more.
