@@ -2502,7 +2502,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "ingest.fetch" | "ingest.load" | "nlp.embed" | "nlp.cluster" | "nlp.summarize" | "score.posts" | "score.authors" | "score.fusion" | "graph.build_edges" | "graph.communities" | "graph.layout" | "compass.generate" | "domain.enrich" | "alerts.evaluate" | "reports.render" | "maint.purge_uploads";
+            kind: "ingest.fetch" | "ingest.load" | "nlp.embed" | "nlp.cluster" | "nlp.summarize" | "score.posts" | "score.authors" | "score.fusion" | "graph.build_edges" | "graph.communities" | "graph.layout" | "compass.generate" | "domain.enrich" | "alerts.evaluate" | "reports.render";
             /** Params */
             params?: {
                 [key: string]: unknown;
