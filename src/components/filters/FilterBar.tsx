@@ -5,9 +5,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { activeChips, type FilterChip, type FilterKey, type FilterSpec } from '@/lib/filters';
+import { activeChips, type FilterChip, type FilterSpec } from '@/lib/filters';
 import { cn } from '@/lib/utils';
 import { AdvancedFilters } from './AdvancedFilters';
+import { useChipText } from './useChipText';
 import { DateRangeControl } from './DateRangeControl';
 
 /**
@@ -19,20 +20,17 @@ export function FilterBar({
   filters,
   onChange,
   onReset,
-  resolveChipLabel,
   children,
   className,
 }: {
   filters: FilterSpec;
   onChange: (patch: Partial<FilterSpec>) => void;
   onReset: () => void;
-  /** Turns an id chip into a readable name, e.g. narrative id -> title. */
-  resolveChipLabel?: (key: FilterKey, value: string) => string | undefined;
   /** Page-specific controls (sort, group-by) sit inline with the shared ones. */
   children?: ReactNode;
   className?: string;
 }) {
-  const chips = activeChips(filters, resolveChipLabel);
+  const chips = activeChips(filters);
   const [copied, setCopied] = useState(false);
 
   function copyLink() {
@@ -115,6 +113,8 @@ function ChipButton({
   filters: FilterSpec;
   onChange: (patch: Partial<FilterSpec>) => void;
 }) {
+  const { label, title } = useChipText(chip);
+
   function remove() {
     if (chip.key === 'include_shared') {
       onChange({ include_shared: true });
@@ -130,12 +130,12 @@ function ChipButton({
   }
 
   return (
-    <Badge variant="outline" className="gap-1 py-1 pr-1">
-      <span className="max-w-[18rem] truncate">{chip.label}</span>
+    <Badge variant="outline" className="gap-1 py-1 pr-1" title={title}>
+      <span className="max-w-[18rem] truncate">{label}</span>
       <button
         type="button"
         onClick={remove}
-        aria-label={`Remove filter ${chip.label}`}
+        aria-label={`Remove filter ${label}`}
         className="rounded-sm p-0.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
       >
         <X className="h-2.5 w-2.5" aria-hidden="true" />
