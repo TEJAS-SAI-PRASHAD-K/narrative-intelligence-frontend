@@ -37,10 +37,14 @@ describe('OriginalPost engagement', () => {
 });
 
 const base = postWithNullViews;
-const scores = (scoring_version: string | null) => ({
+const scores = (
+  scoring_version: string | null,
+  model_versions: Record<string, string> | null = null,
+) => ({
   ...base.scores,
   misinfo_likelihood: 0.6,
   scoring_version,
+  model_versions,
 });
 
 describe('OriginalPost misinfo chip', () => {
@@ -50,6 +54,24 @@ describe('OriginalPost misinfo chip', () => {
     );
     expect(html).toContain('Misinfo (Laya, title only)');
     expect(html).toContain('not comparable with English misinfo values');
+  });
+
+  it('names Laya from the model_versions map on a Hindi post', () => {
+    const html = renderHtml(
+      <OriginalPost
+        post={{ ...base, lang: 'hi', scores: scores(null, { laya: 'v0.2.1+x@1a2b' }) }}
+      />,
+    );
+    expect(html).toContain('Misinfo (Laya, title only)');
+  });
+
+  it('keeps the plain chip when the map has no laya key, even with an old laya stamp', () => {
+    const html = renderHtml(
+      <OriginalPost
+        post={{ ...base, lang: 'hi', scores: scores('laya=v0.2.1', { misinfo: 'v1' }) }}
+      />,
+    );
+    expect(html).not.toContain('Laya');
   });
 
   it('keeps the plain chip on an unstamped Hindi post and on English', () => {

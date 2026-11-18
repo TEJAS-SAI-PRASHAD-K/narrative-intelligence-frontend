@@ -16,6 +16,15 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The misinfo model comes from `model_versions`.** Contract sync adds
+  `PostScores.model_versions`, a map of module name to version stamp. `misinfoModelOf` reads
+  it first. A `laya` key on a Hindi post means Laya. A `misinfo` key means the English model.
+  The code compares keys and never parses the stamp values. The old `laya=` parse of
+  `scoring_version` runs only when `model_versions` is null or absent. A map that exists
+  without a `laya` key means Laya did not run, so the code does not read the stamp then.
+  A post with neither key keeps the English default. `hasLayaStamp` now takes the scores
+  object. The `OriginalPost` fixture carries a `model_versions` map.
+
 - **Platform lists follow the contract.** `pnpm gen:api` also writes `src/api/sources.ts`
   from the `source` enum in `openapi.json`. The advanced filters and the network entry
   page read that list instead of keeping their own copies, so a new source needs no edit.
@@ -62,7 +71,7 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   maps every call site to the field it renders and fails when `"hundred"` is not on a
   `0..100` field or `"unit"` on a `0..1` one, or when a new call site is not listed.
 - **Hindi misinfo values name the model.** The post chip reads "Misinfo (Laya, title only)" for a
-  Hindi post whose `scoring_version` carries a `laya=` stamp, with a tooltip saying the value is a
+  Hindi post whose `model_versions` map has a `laya` key, with a tooltip saying the value is a
   separate model's rank within Hindi and not comparable with English. The language coverage panel
   notes that the misinfo figures combine two models when Hindi and English both have scored
   values.
