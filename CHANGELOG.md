@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Contract sync for score ranges.** `HighRiskPost.risk_score` and
+  `AuthorScoreExplanation.risk_score` now declare `0..100`, and `GraphNode.bot_score`
+  and `DomainOut.sharing_author_bot_ratio` declare `0..1`, in `openapi.json`.
+- **`ScoreCell` scales are checked against the schema.** `scoreScale.contract.test.ts`
+  maps every call site to the field it renders and fails when `"hundred"` is not on a
+  `0..100` field or `"unit"` on a `0..1` one, or when a new call site is not listed.
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
   platform measured engagement, not `0`. `openapi.json` and `src/api/schema.d.ts` carry
   the new nullable fields: `TimeseriesPoint.value`, the `TimeseriesPoint.series` values,
