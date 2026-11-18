@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import {
   useAuthor,
   useAuthorPosts,
@@ -14,14 +14,9 @@ import { EmptyState, ErrorState, SkeletonCard, SkeletonText } from '@/components
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useProjectContext } from '@/layout/useProjectContext';
-import {
-  formatCount,
-  formatDateTime,
-  formatScore,
-  humanizeEnum,
-  platformLabel,
-} from '@/lib/format';
+import { formatCount, formatDateTime, platformLabel } from '@/lib/format';
 import { useFilters } from '@/lib/useFilters';
+import { AuthorCohorts, AuthorNarratives } from './components/AuthorAffiliations';
 import { AuthorStats } from './components/AuthorPanel';
 
 /**
@@ -99,27 +94,7 @@ export default function AuthorPage() {
         <AuthorStats author={a} tz={filters.tz} />
       </section>
 
-      {(a.cohorts?.length ?? 0) > 0 && (
-        <section className="space-y-1.5">
-          <h2 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Cohorts
-          </h2>
-          <div className="flex flex-wrap gap-1.5">
-            {a.cohorts?.map((c) => (
-              <Badge key={c.cohort_id} variant="outline" className="gap-1">
-                {c.name}
-                <span className="text-muted-foreground">
-                  {humanizeEnum(c.category)}
-                  {c.confidence !== null && c.confidence !== undefined
-                    ? ` · ${formatScore(c.confidence)}`
-                    : ''}{' '}
-                  · {c.assigned_by === 'analyst' ? 'analyst' : 'model'}
-                </span>
-              </Badge>
-            ))}
-          </div>
-        </section>
-      )}
+      <AuthorCohorts authorId={a.author_id} projectId={projectId} memberships={a.cohorts} />
 
       {(a.author_group_ids?.length ?? 0) > 0 && (
         <section className="space-y-1.5">
@@ -136,26 +111,7 @@ export default function AuthorPage() {
         </section>
       )}
 
-      {(a.narratives_touched?.length ?? 0) > 0 && (
-        <section className="space-y-1.5">
-          <h2 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
-            Narratives touched
-          </h2>
-          {/* Ids only -- the contract returns no titles here (contract-gaps #9). */}
-          <ul className="flex flex-wrap gap-1.5">
-            {a.narratives_touched?.map((id) => (
-              <li key={id}>
-                <Link
-                  to={`/p/${slug}/narratives/${id}`}
-                  className="rounded-sm font-mono text-2xs text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring"
-                >
-                  {id.slice(0, 8)}…
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <AuthorNarratives authorId={a.author_id} projectId={projectId} slug={slug} />
 
       <section className="space-y-2">
         <h2 className="text-2xs font-semibold uppercase tracking-wide text-muted-foreground">

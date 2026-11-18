@@ -70,10 +70,16 @@ export const qk = {
       ['authors', 'timeline', id, opts] as const,
     posts: (id: string, list?: ListSpec) => ['authors', 'posts', id, listPart(list)] as const,
     groups: (projectId: string) => ['authors', 'groups', projectId] as const,
+    cohorts: (id: string, projectId: string, list?: ListSpec) =>
+      ['authors', 'cohorts', id, projectId, listPart(list)] as const,
+    narratives: (id: string, projectId: string, list?: ListSpec) =>
+      ['authors', 'narratives', id, projectId, listPart(list)] as const,
+    groupName: (id: string) => ['authors', 'group-name', id] as const,
   },
 
   cohorts: {
     all: ['cohorts'] as const,
+    name: (id: string) => ['cohorts', 'name', id] as const,
     list: (f: FilterSpec, list?: ListSpec) =>
       ['cohorts', 'list', filterKey(f), listPart(list)] as const,
     authors: (cohortId: string, list?: ListSpec) =>

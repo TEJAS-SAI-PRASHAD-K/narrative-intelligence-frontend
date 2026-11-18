@@ -7,8 +7,9 @@ implied, is written down here instead of being worked around silently.
 Each entry says what was observed, what the UI does now, and what Phase 4 would need
 to change for the workaround to go away.
 
-Entries are numbered in one continuous sequence (observations 1-6, gaps 7-10); code
-comments reference them as `contract-gaps #N`.
+Entries are numbered in one continuous sequence (observations 1 to 6, gaps 7 to 10).
+A closed entry keeps its number and is marked closed, and code comments reference
+entries as `contract-gaps #N`.
 
 ---
 
@@ -48,22 +49,23 @@ the frontend adjustment could be deleted.
 `toxicity_score`, `coordination_score`, `bot_like_share`, and the six
 `NarrativeScorecard` signals). Three are `0..100`: `AuthorOut.risk_score`,
 `DomainOut.risk_score` and `NarrativeScorecard.fusion_score`.
-`HighRiskPost.risk_score` declares no range but returns `96.2`, so it is `0..100`
-too. `AuthorScoreExplanation.risk_score` likewise declares no range and shares
-`AuthorOut`'s scale.
+`HighRiskPost.risk_score` and `AuthorScoreExplanation.risk_score`, which used to
+declare no range, now declare `0..100` as well.
 
 **UI behaviour.** `ScoreCell` takes a required `scale` prop (`"unit"` or
 `"hundred"`), so a new call site has to look the field up in the contract rather
 than guess. `riskLevel.ts` exposes `riskLevelFromScore` and `riskLevelFrom100`
 separately and never infers the scale from the value — on a `0..100` scale, `0.4`
 is a very low risk, not a medium one. Guarded by `riskLevel.test.ts`.
+`scoreScale.contract.test.ts` reads `openapi.json` and checks every `ScoreCell` call site against the range declared for the field it
+renders: `"hundred"` needs `0..100`, `"unit"` needs `0..1`. A call site missing from
+its table fails the test until it is listed.
 
 This was caught only by running against real data: `risk_score: 33.2` rendered as
 `3320%`.
 
-**Phase 4 action.** Declare `minimum`/`maximum` on `HighRiskPost.risk_score` and
-`AuthorScoreExplanation.risk_score` so the scale is discoverable from the schema
-rather than from a sample response.
+**Phase 4 action.** None. Every field rendered through `ScoreCell` now declares its
+range, including `GraphNode.bot_score` and `DomainOut.sharing_author_bot_ratio`.
 
 ### 4. `GraphResponse.layout` decides who positions the nodes
 
@@ -120,52 +122,42 @@ as a frontend bug.
 
 ## Gaps — data a screen wanted and no route provides
 
-### 7. No route resolves a cohort id to a name outside a list response
+### 7. No route resolved a cohort id to a name outside a list response (closed)
 
-**Wanted.** The filter bar renders a removable chip per active filter. For
-`cohort_id`, `narrative_id` and `author_group_id` the chip should read
-`Cohort: Verified journalists`, not `Cohort: 7f3a…`.
+**Was.** The filter bar chips for `cohort_id`, `narrative_id` and `author_group_id`
+showed a raw id such as `Cohort: 7f3a…`, because names came only inside list responses.
 
-**Available.** `GET /cohorts`, `GET /narratives` and `GET /author-groups` return names
-only as part of a filtered list; there is no `GET /cohorts/{id}` and no bulk
-`?ids=` lookup.
+**Now.** `GET /cohorts/{cohort_id}` and `GET /author-groups/{group_id}` return
+`{id, name}`, and narratives use the `title` from `GET /narratives/{narrative_id}`. Each
+chip resolves its id through a cached per-id query. While loading, or on a `404`, it
+shows the short id and its `title` says why.
 
-**UI behaviour.** `FilterBar` accepts a `resolveChipLabel` callback, and pages that
-already hold the relevant list pass a lookup into it. Pages that do not hold the list
-render the raw id. No extra request is issued purely to decorate a chip.
+### 8. `GET /drivers/*` returned no pagination cursor (closed)
 
-**Phase 4 action.** A `GET /cohorts/{id}` (and equivalents), or an `ids` filter on the
-existing list routes, would let every chip render a name on every page.
+**Was.** `DriversResponse` was `{definition, entity_type, items}` with no `next_cursor`
+and no `total`, so the drivers tables could show one page of 200 rows and no more.
 
-### 8. `GET /drivers/*` returns no pagination cursor
+**Now.** The routes return `next_cursor`, `total` (null when the backend did not count)
+and `filters_applied`. `useDrivers` is an infinite query and `EntityTable` renders a
+"Load more" footer from its `pagination` prop. The cursor lives only in the query's page
+params: it is not in the URL or the query key, so a shared link starts at page one.
 
-**Wanted.** The drivers tables are the densest lists in the product and an analyst
-will want more than one page of them.
+---
 
-**Available.** `DriversResponse` is `{definition, entity_type, items}` — no
-`next_cursor` and no `total`, even though the route accepts `cursor` and `limit`.
-
-**UI behaviour.** The drivers tables request a single page at `limit=200` (the contract
-maximum) and say so in the table footer rather than implying the list is complete.
-No client-side paging is faked.
-
-**Phase 4 action.** Return the standard `PageResponse` envelope from
-`/drivers/authors|hashtags|urls`.
-
-### 9. No route lists an author's cohorts or narratives by id
+### 9. No route lists an author's cohorts or narratives by id (closed)
 
 **Wanted.** The author slide-over shows cohort chips and the narratives an author
-touched.
+touched, by name.
 
-**Available.** `AuthorOut` carries `cohorts[]` (as `CohortMembership`, which includes
-the name) and `narratives_touched[]` (ids only).
+**Resolved.** `GET /authors/{author_id}/cohorts` returns `CohortOut` and
+`GET /authors/{author_id}/narratives` returns `NarrativeSummary`, both cursor
+paginated with `total`. An unknown author is a `404` with code `author_not_found`.
 
-**UI behaviour.** Cohort chips render from the embedded `CohortMembership.name`.
-Narrative ids render as links to the narrative detail route, labelled by id, because
-resolving each to a title would take one request per narrative.
-
-**Phase 4 action.** Include narrative titles alongside ids, as `ComparisonOut` already
-does with `narrative_titles`.
+**UI behaviour.** The slide-over and the full author page load both lists scoped by
+`project_id` only (page filters describe a view, not an author's affiliations) and
+page them with "Load more". Narratives link to their detail route by title. The
+embedded `CohortMembership` is kept only to show who assigned a cohort and its
+confidence, which the list route does not carry. The id-only workaround is gone.
 
 ### 10. No route reported the current key's scopes (closed)
 

@@ -1,6 +1,7 @@
 import type { LanguageCoverage } from '@/api/types';
 import { NotMeasured } from '@/components/risk/NotMeasured';
 import { InfoTip } from '@/components/ui/tooltip';
+import { MIXED_MISINFO_NOTE, mixesMisinfoModels } from '@/lib/misinfoModel';
 import { formatExactCount, humanizeEnum } from '@/lib/format';
 import { cn } from '@/lib/utils';
 import { coverageModules, coverageRows, languageLabel } from './languageCoverage';
@@ -71,6 +72,11 @@ function Body({ coverage }: { coverage: readonly LanguageCoverage[] | null | und
 
   return (
     <div className="mt-2 overflow-x-auto">
+      {mixesMisinfoModels(coverage) && (
+        <p role="note" className="mb-2 text-2xs text-muted-foreground">
+          {MIXED_MISINFO_NOTE}
+        </p>
+      )}
       <table className="w-full text-xs">
         <thead>
           <tr className="text-left text-2xs uppercase tracking-wide text-muted-foreground">

@@ -92,6 +92,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/author-groups/{group_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resolve an author group id to its name
+         * @description Minimal lookup for rendering an `author_group_id` filter as a name. Returns `{id, name}` only. An unknown id is a 404 with code `author_group_not_found`, never an empty name.
+         */
+        get: operations["get_author_group_api_v1_author_groups__group_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/author-groups/{group_id}/members": {
         parameters: {
             query?: never;
@@ -138,6 +158,40 @@ export interface paths {
         };
         /** Author detail */
         get: operations["get_author_api_v1_authors__author_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/authors/{author_id}/cohorts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** An author's cohorts */
+        get: operations["author_cohorts_api_v1_authors__author_id__cohorts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/authors/{author_id}/narratives": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Narratives an author touched */
+        get: operations["author_narratives_api_v1_authors__author_id__narratives_get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -214,6 +268,26 @@ export interface paths {
         };
         /** List cohorts */
         get: operations["list_cohorts_api_v1_cohorts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/cohorts/{cohort_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Resolve a cohort id to its name
+         * @description Minimal lookup for rendering a `cohort_id` filter as a name. Returns `{id, name}` only. An unknown id is a 404 with code `cohort_not_found`, never an empty name. The equivalent for narratives is `GET /narratives/{narrative_id}` (its `title` is the display name) and for watchlists `GET /author-groups/{group_id}`.
+         */
+        get: operations["get_cohort_api_v1_cohorts__cohort_id__get"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1734,6 +1808,8 @@ export interface components {
         AuthorsBreakdown: {
             author_groups: components["schemas"]["Metric"];
             bot_like: components["schemas"]["Metric"];
+            /** @description Share of coordination-scored authors above the fusion coordination threshold, as a value in [0, 1]. This is the author signal fusion reads. The value is null when no author in scope was scored by the coordination stage, never 0. */
+            coordinated_author_ratio: components["schemas"]["Metric"];
             /** Top Cohorts */
             top_cohorts?: components["schemas"]["HierarchyNode"][];
             total: components["schemas"]["Metric"];
@@ -2147,8 +2223,19 @@ export interface components {
              * @enum {string}
              */
             entity_type: "author" | "hashtag" | "url" | "domain";
+            /** Filters Applied */
+            filters_applied?: {
+                [key: string]: unknown;
+            };
             /** Items */
             items: components["schemas"]["DriverItem"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+            /**
+             * Total
+             * @description Distinct entities matching the filters. Null when counting would cost more than the page itself.
+             */
+            total?: number | null;
         };
         /** EmotionShare */
         EmotionShare: {
@@ -2556,7 +2643,7 @@ export interface components {
              * Kind
              * @enum {string}
              */
-            kind: "ingest.fetch" | "ingest.load" | "nlp.embed" | "nlp.cluster" | "nlp.summarize" | "score.posts" | "score.authors" | "score.fusion" | "graph.build_edges" | "graph.communities" | "graph.layout" | "compass.generate" | "domain.enrich" | "alerts.evaluate" | "reports.render" | "maint.purge_uploads";
+            kind: "ingest.fetch" | "ingest.load" | "nlp.embed" | "nlp.cluster" | "nlp.summarize" | "score.posts" | "score.authors" | "score.fusion" | "graph.build_edges" | "graph.communities" | "graph.layout" | "compass.generate" | "domain.enrich" | "alerts.evaluate" | "reports.render";
             /** Params */
             params?: {
                 [key: string]: unknown;
@@ -2683,6 +2770,19 @@ export interface components {
             unit?: string | null;
             /** Value */
             value: number | null;
+        };
+        /**
+         * NamedRef
+         * @description The smallest answer to "what is this id called".
+         *
+         *     Used by the single-entity lookup routes that exist so a filter chip can show
+         *     a name instead of a raw id. Anything richer belongs on the detail route.
+         */
+        NamedRef: {
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
         };
         /**
          * NarrativeCohortShare
@@ -2884,12 +2984,20 @@ export interface components {
         NarrativeScorecard: {
             /** Anomalous */
             anomalous?: number | null;
-            /** Bot Like */
+            /**
+             * Bot Like
+             * @description Share of the narrative's classifiable authors the account classifier scores as bot-like. Fusion does not read this: the classifier does not generalize across folds, so it is shown for context only. Null means not measured.
+             */
             bot_like?: number | null;
             /** Compass Risk */
             compass_risk?: ("high" | "medium" | "low") | null;
             /** Computed At */
             computed_at?: string | null;
+            /**
+             * Coordinated Author Ratio
+             * @description Share of the narrative's coordination-scored authors whose coordination score is above the fusion threshold. This is the author signal fusion reads. Null means no member author was scored by the coordination stage; it is never 0 for not measured.
+             */
+            coordinated_author_ratio?: number | null;
             /** Fusion Score */
             fusion_score?: number | null;
             /** Missing */
@@ -4180,6 +4288,39 @@ export interface operations {
             };
         };
     };
+    get_author_group_api_v1_author_groups__group_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path: {
+                group_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NamedRef"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
     add_author_group_members_api_v1_author_groups__group_id__members_post: {
         parameters: {
             query?: never;
@@ -4297,6 +4438,128 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    author_cohorts_api_v1_authors__author_id__cohorts_get: {
+        parameters: {
+            query: {
+                /** @description Project uuid or slug. Required everywhere. */
+                project_id: string;
+                /** @description Inclusive lower bound, UTC. */
+                date_from?: string | null;
+                /** @description Exclusive upper bound, UTC. */
+                date_to?: string | null;
+                /** @description IANA zone for bucketing and labels only; filtering is always UTC. */
+                tz?: string;
+                platform?: string[] | null;
+                narrative_id?: string[] | null;
+                cohort_id?: string[] | null;
+                author_group_id?: string[] | null;
+                sentiment?: string[] | null;
+                emotion?: string[] | null;
+                min_toxicity?: number | null;
+                min_risk?: number | null;
+                is_anomalous?: boolean | null;
+                is_bot_like?: boolean | null;
+                content_type?: string[] | null;
+                lang?: string[] | null;
+                /** @description Full-text query over post text. */
+                q?: string | null;
+                /** @description False = the UI's 'Original data' chip: exclude reposts. */
+                include_shared?: boolean;
+                /** @description Opaque cursor from the previous response's `next_cursor`. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path: {
+                author_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_CohortOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    author_narratives_api_v1_authors__author_id__narratives_get: {
+        parameters: {
+            query: {
+                /** @description Project uuid or slug. Required everywhere. */
+                project_id: string;
+                /** @description Inclusive lower bound, UTC. */
+                date_from?: string | null;
+                /** @description Exclusive upper bound, UTC. */
+                date_to?: string | null;
+                /** @description IANA zone for bucketing and labels only; filtering is always UTC. */
+                tz?: string;
+                platform?: string[] | null;
+                narrative_id?: string[] | null;
+                cohort_id?: string[] | null;
+                author_group_id?: string[] | null;
+                sentiment?: string[] | null;
+                emotion?: string[] | null;
+                min_toxicity?: number | null;
+                min_risk?: number | null;
+                is_anomalous?: boolean | null;
+                is_bot_like?: boolean | null;
+                content_type?: string[] | null;
+                lang?: string[] | null;
+                /** @description Full-text query over post text. */
+                q?: string | null;
+                /** @description False = the UI's 'Original data' chip: exclude reposts. */
+                include_shared?: boolean;
+                /** @description Opaque cursor from the previous response's `next_cursor`. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path: {
+                author_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_NarrativeSummary_"];
                 };
             };
             /** @description Validation Error */
@@ -4486,6 +4749,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["PageResponse_CohortOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_cohort_api_v1_cohorts__cohort_id__get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path: {
+                cohort_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NamedRef"];
                 };
             };
             /** @description Validation Error */
