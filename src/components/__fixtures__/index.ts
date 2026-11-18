@@ -269,6 +269,23 @@ export const postWithNullViews: PostOut = {
   },
 };
 
+/** A Hindi post scored by Laya: the map carries a `laya` stamp and no `misinfo` stamp. */
+export const postHindiLaya: PostOut = {
+  ...postWithNullViews,
+  id: 'post-demo-hi',
+  lang: 'hi',
+  text: 'एक ही दावा चार मिनट के भीतर तीन नए खातों से दोहराया गया।',
+  scores: {
+    ...postWithNullViews.scores,
+    scoring_version: 'post-scores-v2.1',
+    model_versions: {
+      laya: 'v0.2.1+finetuned:laya-hi+lora@1a2b3c4d',
+      toxicity: 'v0.2.0+3f9a1c2e',
+      anomaly: 'v0.1.0',
+    },
+  },
+};
+
 export const postUnscored: PostOut = {
   ...postWithNullViews,
   id: 'post-demo-2',

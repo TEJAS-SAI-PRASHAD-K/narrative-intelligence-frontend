@@ -15,8 +15,14 @@ import {
 } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { engagementLabels } from '@/lib/engagement';
-import { formatCount, formatDateTime, formatScore, humanizeEnum, platformLabel } from '@/lib/format';
-import { misinfoModelOf, LAYA_MISINFO_NOTE } from '@/lib/misinfoModel';
+import {
+  formatCount,
+  formatDateTime,
+  formatScore,
+  humanizeEnum,
+  platformLabel,
+} from '@/lib/format';
+import { misinfoModelOf, LAYA_MISINFO_NOTE, UNKNOWN_MISINFO_NOTE } from '@/lib/misinfoModel';
 import { describeSkipReason } from '@/lib/skipReasons';
 import { cn } from '@/lib/utils';
 
@@ -233,16 +239,19 @@ function ScoreChips({
   }
 
   const skipped = scores.skip_reasons ?? [];
+  const misinfoModel = misinfoModelOf(scores, lang);
 
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs">
       <Chip label="Toxicity" value={scores.toxicity} />
-      {misinfoModelOf(scores, lang) === 'laya' ? (
+      {misinfoModel === 'laya' ? (
         <Chip
           label="Misinfo (Laya, title only)"
           value={scores.misinfo_likelihood}
           note={LAYA_MISINFO_NOTE}
         />
+      ) : misinfoModel === 'unknown' ? (
+        <Chip label="Misinfo" value={scores.misinfo_likelihood} note={UNKNOWN_MISINFO_NOTE} />
       ) : (
         <Chip label="Misinfo" value={scores.misinfo_likelihood} />
       )}
