@@ -623,6 +623,26 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/keys/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Scopes of the calling API key
+         * @description Any valid key can call this, including a read-only one, so a client can disable write actions before a write fails. Declared before the `/{key_id}` route so `me` is never read as a key id. Without a database round trip: the answer comes from the key already resolved for the request. Under DEMO_MODE no key is needed and the answer is the fixed demo principal (id `demo`, scopes `read` and `write`, no prefix).
+         */
+        get: operations["whoami_api_v1_keys_me_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/keys/{key_id}": {
         parameters: {
             query?: never;
@@ -1559,6 +1579,40 @@ export interface components {
             /** Scopes */
             scopes: string[];
         };
+        /**
+         * ApiKeySelf
+         * @description The calling key as it sees itself. Never contains the secret or the hash.
+         */
+        ApiKeySelf: {
+            /** Can Admin */
+            can_admin: boolean;
+            /** Can Read */
+            can_read: boolean;
+            /** Can Write */
+            can_write: boolean;
+            /**
+             * Effective Scopes
+             * @description Scopes the key can exercise: `admin` implies `read` and `write`.
+             */
+            effective_scopes: string[];
+            /**
+             * Id
+             * @description Key id, or 'demo' when DEMO_MODE answers without a key.
+             */
+            id: string;
+            /** Name */
+            name: string;
+            /**
+             * Prefix
+             * @description First 8 characters of the key. Null when the caller is not a stored key.
+             */
+            prefix?: string | null;
+            /**
+             * Scopes
+             * @description Scopes granted to the key, sorted.
+             */
+            scopes: string[];
+        };
         /** AuthorGroupCreate */
         AuthorGroupCreate: {
             /** Description */
@@ -2480,7 +2534,7 @@ export interface components {
              * Sources
              * @description Empty means every source with credentials configured.
              */
-            sources?: ("reddit" | "mastodon" | "news" | "gdelt" | "youtube")[];
+            sources?: ("reddit" | "mastodon" | "news" | "gdelt" | "youtube" | "telegram")[];
         };
         /** IngestRunOut */
         IngestRunOut: {
@@ -3778,7 +3832,7 @@ export interface components {
              * Source
              * @enum {string}
              */
-            source: "reddit" | "mastodon" | "news" | "gdelt" | "youtube";
+            source: "reddit" | "mastodon" | "news" | "gdelt" | "youtube" | "telegram";
             /**
              * Status
              * @enum {string}
@@ -3808,7 +3862,7 @@ export interface components {
              * Source
              * @enum {string}
              */
-            source: "reddit" | "mastodon" | "news" | "gdelt" | "youtube";
+            source: "reddit" | "mastodon" | "news" | "gdelt" | "youtube" | "telegram";
         };
         /** SubsystemStatus */
         SubsystemStatus: {
@@ -5581,6 +5635,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["ApiKeyCreated"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    whoami_api_v1_keys_me_get: {
+        parameters: {
+            query?: never;
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiKeySelf"];
                 };
             };
             /** @description Validation Error */

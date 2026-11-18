@@ -1,6 +1,7 @@
 import { ExternalLink, FileSearch, RefreshCw, ShieldAlert, ThumbsDown, ThumbsUp } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import type { Citation, CompassContext } from '@/api/types';
+import { WriteGate } from '@/components/auth/WriteGate';
 import { RiskDot } from '@/components/risk/RiskDot';
 import { riskLevelFromBand } from '@/components/risk/riskLevel';
 import { Badge } from '@/components/ui/badge';
@@ -59,12 +60,15 @@ export function CompassModule({
   onRegenerate,
   onFeedback,
   regenerating,
+  writeDisabledReason,
   className,
 }: {
   context: CompassContext;
   onRegenerate: () => void;
   onFeedback: (helpful: boolean) => void;
   regenerating?: boolean;
+  /** Set when the key lacks the write scope; disables Regenerate and says why. */
+  writeDisabledReason?: string | undefined;
   className?: string;
 }) {
   const [vote, setVote] = useState<boolean | null>(null);
@@ -133,10 +137,20 @@ export function CompassModule({
           </Button>
         </div>
 
-        <Button variant="outline" size="sm" onClick={onRegenerate} disabled={regenerating}>
-          <RefreshCw className={cn('h-3 w-3', regenerating && 'animate-spin')} aria-hidden="true" />
-          {regenerating ? 'Queued' : 'Regenerate'}
-        </Button>
+        <WriteGate reason={writeDisabledReason}>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onRegenerate}
+            disabled={regenerating || Boolean(writeDisabledReason)}
+          >
+            <RefreshCw
+              className={cn('h-3 w-3', regenerating && 'animate-spin')}
+              aria-hidden="true"
+            />
+            {regenerating ? 'Queued' : 'Regenerate'}
+          </Button>
+        </WriteGate>
       </header>
 
       <div className="space-y-3 px-3 py-3">

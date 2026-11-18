@@ -8,6 +8,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Write controls follow the key's scopes.** The app reads `GET /keys/me` once per
+  session and disables **Update Now**, **Regenerate** and **Export** for a key without the
+  `write` scope, with a tooltip naming the missing scope. While the lookup loads or if it
+  fails the controls stay enabled and the server decides. Closes contract gap 10.
+- **Contract sync for `GET /keys/me`.** `openapi.json` and `src/api/schema.d.ts` carry the
+  new route and the `ApiKeySelf` schema.
 - **The author slide-over and page list the author's cohorts and narratives.** Both
   load from `GET /authors/{author_id}/cohorts` and `/narratives`, page with "Load more",
   and have empty and error states. Narratives link to their detail page by title.

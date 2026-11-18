@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { writeDisabledReason } from '@/components/auth/writeAccess';
 import * as fx from '@/components/__fixtures__';
 import { AiBlock } from '@/components/ai/AiBlock';
 import { AiPill } from '@/components/ai/AiPill';
@@ -204,10 +205,21 @@ export default function KitchenSinkPage() {
           onRegenerate={() => undefined}
           onFeedback={() => undefined}
         />
+        <CompassModule
+          context={fx.compassInsufficient}
+          onRegenerate={() => undefined}
+          onFeedback={() => undefined}
+          writeDisabledReason={writeDisabledReason(fx.readOnlyKey)}
+        />
       </Section>
 
       <Section title="FreshnessBar" note="Clustered results are never refreshed silently.">
         <FreshnessBar freshness={fx.freshnessStale} onUpdate={() => undefined} />
+        <FreshnessBar
+          freshness={fx.freshnessStale}
+          onUpdate={() => undefined}
+          writeDisabledReason={writeDisabledReason(fx.readOnlyKey)}
+        />
         <FreshnessBar
           freshness={{ ...fx.freshnessStale, status: 'running', age_human: '2 minutes ago' }}
           onUpdate={() => undefined}

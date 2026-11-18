@@ -159,23 +159,19 @@ page them with "Load more". Narratives link to their detail route by title. The
 embedded `CohortMembership` is kept only to show who assigned a cohort and its
 confidence, which the list route does not carry. The id-only workaround is gone.
 
-### 10. No route reports the current key's scopes
+### 10. No route reported the current key's scopes (closed)
 
-**Wanted.** Phase 5's brief asks for "scopes reflected in disabled controls" — a
+**Wanted.** Phase 5's brief asks for "scopes reflected in disabled controls": a
 read-only key should see **Update Now**, **Regenerate** and **Export** greyed out rather
 than discovering the limit by clicking.
 
-**Available.** Nothing. There is no `/me`, `/whoami` or token-introspection route, and
-`GET /keys` requires the `admin` scope, so a `read`-only key cannot enumerate its own
-permissions. A client can only learn its scopes by attempting an action and reading the
-`403`.
+**Resolution.** `GET /keys/me` returns `ApiKeySelf` (`scopes`, `effective_scopes`,
+`can_read`, `can_write`, `can_admin`) for any valid key, including a read-only one.
+`useKeyScopes` reads it once per session (`staleTime: Infinity`, no retry).
 
-**UI behaviour.** Mutating controls stay enabled and a missing scope surfaces on use.
-`ErrorState` renders the backend's own message verbatim — it already names the scopes
-held and the scope required (*"This API key has scopes ['read', 'write'] and needs
-'admin'"*) — alongside the `code` and `request_id`. Nothing is pre-disabled on a guess,
-because guessing wrong in the permissive direction is confusing and guessing wrong in
-the restrictive direction hides functionality the analyst actually has.
-
-**Phase 4 action.** A `GET /keys/self` returning `{prefix, scopes}` for the presented
-key would make the requirement implementable in about ten lines.
+**UI behaviour.** `useWriteAccess` turns `can_write: false` into a reason string, and
+**Update Now**, **Regenerate** and **Export** are disabled with a tooltip naming the
+missing `write` scope and the scopes held. Only a loaded answer disables anything: while
+the lookup is loading, or if it fails, the controls stay enabled and the server's `403`
+(rendered by `ErrorState`) remains the backstop. `can_write` already accounts for
+`admin` implying `write`. Guarded by `writeAccess.test.tsx`.
