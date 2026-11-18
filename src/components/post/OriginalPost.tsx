@@ -14,7 +14,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { misinfoModelOf, LAYA_MISINFO_NOTE } from '@/lib/misinfoModel';
 import { formatCount, formatDateTime, formatScore, humanizeEnum, platformLabel } from '@/lib/format';
+import { describeSkipReason } from '@/lib/skipReasons';
 import { cn } from '@/lib/utils';
 
 /**
@@ -106,7 +108,7 @@ export function OriginalPost({
         )}
 
         <EngagementRow post={post} />
-        <ScoreChips scores={post.scores ?? null} />
+        <ScoreChips scores={post.scores ?? null} lang={post.lang} />
 
         {(post.hashtags?.length || post.domains?.length) && !compact ? (
           <div className="flex flex-wrap gap-1 pt-0.5">
@@ -157,7 +159,7 @@ export function OriginalPost({
           </p>
           <div className="space-y-2 border-t border-border pt-3">
             <EngagementRow post={post} />
-            <ScoreChips scores={post.scores ?? null} />
+            <ScoreChips scores={post.scores ?? null} lang={post.lang} />
             <p className="font-mono text-2xs text-muted-foreground">
               post_id <span className="select-all">{post.id}</span> · native_id{' '}
               <span className="select-all">{post.native_id}</span>
@@ -213,7 +215,13 @@ function EngagementStat({
 }
 
 /** Model scores as chips. A null score is omitted-with-reason, never shown as 0. */
-function ScoreChips({ scores }: { scores: PostScores | null }) {
+function ScoreChips({
+  scores,
+  lang,
+}: {
+  scores: PostScores | null;
+  lang: string | null | undefined;
+}) {
   if (!scores) {
     return (
       <p className="text-2xs text-muted-foreground">
@@ -227,7 +235,15 @@ function ScoreChips({ scores }: { scores: PostScores | null }) {
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-2xs">
       <Chip label="Toxicity" value={scores.toxicity} />
-      <Chip label="Misinfo" value={scores.misinfo_likelihood} />
+      {misinfoModelOf(scores, lang) === 'laya' ? (
+        <Chip
+          label="Misinfo (Laya, title only)"
+          value={scores.misinfo_likelihood}
+          note={LAYA_MISINFO_NOTE}
+        />
+      ) : (
+        <Chip label="Misinfo" value={scores.misinfo_likelihood} />
+      )}
       <Chip label="Anomaly" value={scores.anomaly} />
       {scores.sentiment && (
         <span className="text-muted-foreground">
@@ -252,7 +268,12 @@ function ScoreChips({ scores }: { scores: PostScores | null }) {
             </span>
           </TooltipTrigger>
           <TooltipContent>
-            The scorer skipped: {skipped.join(', ')}. Those fields are absent, not zero.
+            <ul className="space-y-1">
+              {skipped.map((code) => (
+                <li key={code}>{describeSkipReason(code)}</li>
+              ))}
+            </ul>
+            <p className="mt-1 text-muted-foreground">Those fields are absent, not zero.</p>
           </TooltipContent>
         </Tooltip>
       )}
@@ -260,7 +281,16 @@ function ScoreChips({ scores }: { scores: PostScores | null }) {
   );
 }
 
-function Chip({ label, value }: { label: string; value: number | null | undefined }) {
+function Chip({
+  label,
+  value,
+  note,
+}: {
+  label: string;
+  value: number | null | undefined;
+  /** Caveat on how to read the value; shown on hover and focus and read by screen readers. */
+  note?: string;
+}) {
   if (value === null || value === undefined) {
     return (
       <span className="text-muted-foreground">
@@ -268,10 +298,25 @@ function Chip({ label, value }: { label: string; value: number | null | undefine
       </span>
     );
   }
-  return (
+  const chip = (
     <span className="flex items-center gap-1 text-muted-foreground">
       {label}
       <RiskDot level={riskLevelFromScore(value)} label={formatScore(value)} />
     </span>
+  );
+  if (!note) return chip;
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span
+          tabIndex={0}
+          aria-label={`${label} ${formatScore(value)}. ${note}`}
+          className="cursor-help rounded-sm underline decoration-dotted focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          {chip}
+        </span>
+      </TooltipTrigger>
+      <TooltipContent>{note}</TooltipContent>
+    </Tooltip>
   );
 }
