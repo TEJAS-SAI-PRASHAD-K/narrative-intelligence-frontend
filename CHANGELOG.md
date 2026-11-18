@@ -6,8 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Telegram as a platform.** `openapi.json` and `src/api/schema.d.ts` now include the
+  `telegram` source. A Telegram post shows views and forwards as engagement (reactions
+  and forwards are labelled as Telegram names them), and a counter the channel does not
+  expose, such as hidden reactions, renders as not measured. `/kitchen-sink` has Telegram
+  posts.
+
 ### Changed
 
+- **Platform lists follow the contract.** `pnpm gen:api` also writes `src/api/sources.ts`
+  from the `source` enum in `openapi.json`. The advanced filters and the network entry
+  page read that list instead of keeping their own copies, so a new source needs no edit.
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
   platform measured engagement, not `0`. `openapi.json` and `src/api/schema.d.ts` carry
   the new nullable fields: `TimeseriesPoint.value`, the `TimeseriesPoint.series` values,

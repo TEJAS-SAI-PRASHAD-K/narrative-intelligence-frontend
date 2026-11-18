@@ -195,7 +195,7 @@ export default function KitchenSinkPage() {
 
       <Section
         title="OriginalPost"
-        note="Engagement.views: null renders —, not 0. A Reddit post with no view count is not a post nobody saw."
+        note="Engagement.views: null renders —, not 0. A Reddit post with no view count is not a post nobody saw. Telegram shows views and forwards; a hidden reaction total is not measured, a measured 0 forwards stays 0."
       >
         <div className="grid gap-3 md:grid-cols-2">
           <OriginalPost
@@ -204,6 +204,8 @@ export default function KitchenSinkPage() {
             reasons={['coordinated_timing', 'new_domain', 'high_misinfo_likelihood']}
           />
           <OriginalPost post={fx.postUnscored} tz="UTC" />
+          <OriginalPost post={fx.postTelegram} tz="UTC" />
+          <OriginalPost post={fx.postTelegramNoReactions} tz="UTC" />
         </div>
       </Section>
 

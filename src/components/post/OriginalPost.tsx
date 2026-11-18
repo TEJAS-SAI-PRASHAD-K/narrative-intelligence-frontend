@@ -14,7 +14,14 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { formatCount, formatDateTime, formatScore, humanizeEnum, platformLabel } from '@/lib/format';
+import { engagementLabels } from '@/lib/engagement';
+import {
+  formatCount,
+  formatDateTime,
+  formatScore,
+  humanizeEnum,
+  platformLabel,
+} from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 /**
@@ -171,17 +178,18 @@ export function OriginalPost({
 
 function EngagementRow({ post }: { post: PostOut }) {
   const e = post.engagement;
+  const stat = (counter: 'likes' | 'shares' | 'replies' | 'views', Icon: typeof ThumbsUp) => {
+    const { label, nullReason } = engagementLabels(post.source, counter);
+    return (
+      <EngagementStat Icon={Icon} label={label} value={e?.[counter]} nullReason={nullReason} />
+    );
+  };
   return (
     <dl className="flex flex-wrap items-center gap-x-4 gap-y-1 text-2xs text-muted-foreground">
-      <EngagementStat Icon={ThumbsUp} label="Likes" value={e?.likes} />
-      <EngagementStat Icon={Repeat2} label="Shares" value={e?.shares} />
-      <EngagementStat Icon={MessageSquare} label="Replies" value={e?.replies} />
-      <EngagementStat
-        Icon={Eye}
-        label="Views"
-        value={e?.views}
-        nullReason="This platform does not report view counts."
-      />
+      {stat('likes', ThumbsUp)}
+      {stat('shares', Repeat2)}
+      {stat('replies', MessageSquare)}
+      {stat('views', Eye)}
     </dl>
   );
 }

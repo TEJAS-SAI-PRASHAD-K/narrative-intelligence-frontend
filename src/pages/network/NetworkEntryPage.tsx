@@ -2,6 +2,7 @@ import { Network, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ApiError } from '@/api/client';
+import { PLATFORMS } from '@/api/sources';
 import { useCreateComparison, useComparisons, useDeleteComparison } from '@/api/queries/network';
 import { useNarrativeFeed } from '@/api/queries/narratives';
 import type { ComparisonOut, EntityType } from '@/api/types';
@@ -36,7 +37,6 @@ import { toSearchParams } from '@/lib/filters';
 import { formatDateTime, platformLabel, truncate } from '@/lib/format';
 import { useFilters } from '@/lib/useFilters';
 
-const PLATFORMS = ['reddit', 'mastodon', 'news', 'gdelt', 'youtube'] as const;
 const ENTITY_TYPES: EntityType[] = ['author', 'hashtag', 'url', 'domain'];
 
 /**
