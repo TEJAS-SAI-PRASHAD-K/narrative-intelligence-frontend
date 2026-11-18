@@ -7,8 +7,9 @@ implied, is written down here instead of being worked around silently.
 Each entry says what was observed, what the UI does now, and what Phase 4 would need
 to change for the workaround to go away.
 
-Entries are numbered in one continuous sequence (observations 1-6, gaps 7-10); code
-comments reference them as `contract-gaps #N`.
+Entries are numbered in one continuous sequence (observations 1 to 6, gaps 7 to 10).
+A closed entry keeps its number, or is removed and its number retired (gap 7), and
+code comments reference entries as `contract-gaps #N`.
 
 ---
 
@@ -48,22 +49,23 @@ the frontend adjustment could be deleted.
 `toxicity_score`, `coordination_score`, `bot_like_share`, and the six
 `NarrativeScorecard` signals). Three are `0..100`: `AuthorOut.risk_score`,
 `DomainOut.risk_score` and `NarrativeScorecard.fusion_score`.
-`HighRiskPost.risk_score` declares no range but returns `96.2`, so it is `0..100`
-too. `AuthorScoreExplanation.risk_score` likewise declares no range and shares
-`AuthorOut`'s scale.
+`HighRiskPost.risk_score` and `AuthorScoreExplanation.risk_score`, which used to
+declare no range, now declare `0..100` as well.
 
 **UI behaviour.** `ScoreCell` takes a required `scale` prop (`"unit"` or
 `"hundred"`), so a new call site has to look the field up in the contract rather
 than guess. `riskLevel.ts` exposes `riskLevelFromScore` and `riskLevelFrom100`
 separately and never infers the scale from the value — on a `0..100` scale, `0.4`
 is a very low risk, not a medium one. Guarded by `riskLevel.test.ts`.
+`scoreScale.contract.test.ts` reads `openapi.json` and checks every `ScoreCell` call site against the range declared for the field it
+renders: `"hundred"` needs `0..100`, `"unit"` needs `0..1`. A call site missing from
+its table fails the test until it is listed.
 
 This was caught only by running against real data: `risk_score: 33.2` rendered as
 `3320%`.
 
-**Phase 4 action.** Declare `minimum`/`maximum` on `HighRiskPost.risk_score` and
-`AuthorScoreExplanation.risk_score` so the scale is discoverable from the schema
-rather than from a sample response.
+**Phase 4 action.** None. Every field rendered through `ScoreCell` now declares its
+range, including `GraphNode.bot_score` and `DomainOut.sharing_author_bot_ratio`.
 
 ### 4. `GraphResponse.layout` decides who positions the nodes
 
@@ -137,20 +139,18 @@ render the raw id. No extra request is issued purely to decorate a chip.
 **Phase 4 action.** A `GET /cohorts/{id}` (and equivalents), or an `ids` filter on the
 existing list routes, would let every chip render a name on every page.
 
+### 8. `GET /drivers/*` returned no pagination cursor (closed)
 ### 8. `GET /drivers/*` returns no pagination cursor
 
-**Wanted.** The drivers tables are the densest lists in the product and an analyst
-will want more than one page of them.
+**Was.** `DriversResponse` was `{definition, entity_type, items}` with no `next_cursor`
+and no `total`, so the drivers tables could show one page of 200 rows and no more.
 
-**Available.** `DriversResponse` is `{definition, entity_type, items}` — no
-`next_cursor` and no `total`, even though the route accepts `cursor` and `limit`.
+**Now.** The routes return `next_cursor`, `total` (null when the backend did not count)
+and `filters_applied`. `useDrivers` is an infinite query and `EntityTable` renders a
+"Load more" footer from its `pagination` prop. The cursor lives only in the query's page
+params: it is not in the URL or the query key, so a shared link starts at page one.
 
-**UI behaviour.** The drivers tables request a single page at `limit=200` (the contract
-maximum) and say so in the table footer rather than implying the list is complete.
-No client-side paging is faked.
-
-**Phase 4 action.** Return the standard `PageResponse` envelope from
-`/drivers/authors|hashtags|urls`.
+---
 
 ### 9. No route lists an author's cohorts or narratives by id (closed)
 

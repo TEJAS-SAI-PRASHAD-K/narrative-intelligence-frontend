@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { useChipText } from '@/components/filters/useChipText';
 import { activeChips, removeChip, type FilterSpec } from '@/lib/filters';
 import { STORAGE_KEYS, writeLocal } from '@/lib/storage';
 
@@ -80,10 +81,7 @@ export function TopBar({
             size="sm"
             className="h-8 shrink-0 gap-2 rounded-lg border border-border bg-surface-raised px-2.5 hover:border-border-strong"
           >
-            <span
-              aria-hidden="true"
-              className="h-1.5 w-1.5 shrink-0 rounded-full bg-risk-low"
-            />
+            <span aria-hidden="true" className="h-1.5 w-1.5 shrink-0 rounded-full bg-risk-low" />
             <span className="max-w-[14rem] truncate">{project?.name ?? 'Select project'}</span>
             <ChevronDown className="h-3 w-3 opacity-60" aria-hidden="true" />
           </Button>
@@ -186,21 +184,11 @@ function FilterSummary({
       <span className="h-4 w-px shrink-0 bg-border" aria-hidden="true" />
       <span className="sr-only">Active filters</span>
       {shown.map((chip) => (
-        <Badge
+        <SummaryChip
           key={`${chip.key}:${chip.value ?? ''}`}
-          variant="outline"
-          className="min-w-0 gap-1 py-1 pr-1"
-        >
-          <span className="truncate">{chip.label}</span>
-          <button
-            type="button"
-            onClick={() => onFiltersChange(removeChip(filters, chip))}
-            aria-label={`Remove filter ${chip.label}`}
-            className="shrink-0 rounded-sm p-0.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          >
-            <X className="h-2.5 w-2.5" aria-hidden="true" />
-          </button>
-        </Badge>
+          chip={chip}
+          onRemove={() => onFiltersChange(removeChip(filters, chip))}
+        />
       ))}
       {overflow > 0 && (
         <Tooltip>
@@ -220,5 +208,28 @@ function FilterSummary({
         </Tooltip>
       )}
     </div>
+  );
+}
+
+function SummaryChip({
+  chip,
+  onRemove,
+}: {
+  chip: ReturnType<typeof activeChips>[number];
+  onRemove: () => void;
+}) {
+  const { label, title } = useChipText(chip);
+  return (
+    <Badge variant="outline" className="min-w-0 gap-1 py-1 pr-1" title={title}>
+      <span className="truncate">{label}</span>
+      <button
+        type="button"
+        onClick={onRemove}
+        aria-label={`Remove filter ${label}`}
+        className="shrink-0 rounded-sm p-0.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      >
+        <X className="h-2.5 w-2.5" aria-hidden="true" />
+      </button>
+    </Badge>
   );
 }

@@ -12,9 +12,41 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   load from `GET /authors/{author_id}/cohorts` and `/narratives`, page with "Load more",
   and have empty and error states. Narratives link to their detail page by title.
   Closes contract gap 9. `AuthorPanel` now takes a `projectId` prop.
+- **CI workflow.** `.github/workflows/ci.yml` runs install (frozen lockfile), lint, test,
+  build and `gen:api:check` on pull requests and on `main`, so contract drift fails the
+  check. Node is pinned in `.nvmrc` (22) and pnpm through `packageManager`.
 
 ### Changed
 
+- **Drivers tables page through `next_cursor`.** `useDrivers` is an infinite query and
+  `EntityTable` takes a `pagination` prop that renders a "Load more" footer with the row
+  count and, when the backend counted, the total. The cursor stays out of the URL, so a
+  shared link starts at page one. Closes contract-gaps #8; `openapi.json` and
+  `src/api/schema.d.ts` carry `next_cursor`, `total` and `filters_applied` on
+  `DriversResponse`.
+- **Filter chips show names.** `cohort_id`, `narrative_id` and `author_group_id` chips
+  resolve through `GET /cohorts/{id}`, `GET /narratives/{id}` and
+  `GET /author-groups/{id}`, cached per id, in both the filter bar and the top bar. While
+  loading, on a 404 or on any other failure the chip shows the short id and its title says
+  why. `FilterBar` no longer takes `resolveChipLabel` (contract-gaps #7 is closed).
+- **Contract sync for name lookups.** `openapi.json` and `src/api/schema.d.ts` add
+  `GET /cohorts/{cohort_id}`, `GET /author-groups/{group_id}` and the `NamedRef` schema.
+
+- **Contract sync for score ranges.** `HighRiskPost.risk_score` and
+  `AuthorScoreExplanation.risk_score` now declare `0..100`, and `GraphNode.bot_score`
+  and `DomainOut.sharing_author_bot_ratio` declare `0..1`, in `openapi.json`.
+- **`ScoreCell` scales are checked against the schema.** `scoreScale.contract.test.ts`
+  maps every call site to the field it renders and fails when `"hundred"` is not on a
+  `0..100` field or `"unit"` on a `0..1` one, or when a new call site is not listed.
+- **Hindi misinfo values name the model.** The post chip reads "Misinfo (Laya, title only)" for a
+  Hindi post whose `scoring_version` carries a `laya=` stamp, with a tooltip saying the value is a
+  separate model's rank within Hindi and not comparable with English. The language coverage panel
+  notes that the misinfo figures combine two models when Hindi and English both have scored
+  values.
+- **Skipped scores read as sentences.** The "signals skipped" tooltip on a post maps
+  `module:reason` codes to short sentences (`src/lib/skipReasons.ts`), including
+  `fact_check_publisher`, which explains why a fact-checker's article has no misinfo
+  score. A code with no entry is shown as itself.
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
   platform measured engagement, not `0`. `openapi.json` and `src/api/schema.d.ts` carry
   the new nullable fields: `TimeseriesPoint.value`, the `TimeseriesPoint.series` values,
