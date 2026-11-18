@@ -152,20 +152,20 @@ No client-side paging is faked.
 **Phase 4 action.** Return the standard `PageResponse` envelope from
 `/drivers/authors|hashtags|urls`.
 
-### 9. No route lists an author's cohorts or narratives by id
+### 9. No route lists an author's cohorts or narratives by id (closed)
 
 **Wanted.** The author slide-over shows cohort chips and the narratives an author
-touched.
+touched, by name.
 
-**Available.** `AuthorOut` carries `cohorts[]` (as `CohortMembership`, which includes
-the name) and `narratives_touched[]` (ids only).
+**Resolved.** `GET /authors/{author_id}/cohorts` returns `CohortOut` and
+`GET /authors/{author_id}/narratives` returns `NarrativeSummary`, both cursor
+paginated with `total`. An unknown author is a `404` with code `author_not_found`.
 
-**UI behaviour.** Cohort chips render from the embedded `CohortMembership.name`.
-Narrative ids render as links to the narrative detail route, labelled by id, because
-resolving each to a title would take one request per narrative.
-
-**Phase 4 action.** Include narrative titles alongside ids, as `ComparisonOut` already
-does with `narrative_titles`.
+**UI behaviour.** The slide-over and the full author page load both lists scoped by
+`project_id` only (page filters describe a view, not an author's affiliations) and
+page them with "Load more". Narratives link to their detail route by title. The
+embedded `CohortMembership` is kept only to show who assigned a cohort and its
+confidence, which the list route does not carry. The id-only workaround is gone.
 
 ### 10. No route reports the current key's scopes
 

@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **The author slide-over and page list the author's cohorts and narratives.** Both
+  load from `GET /authors/{author_id}/cohorts` and `/narratives`, page with "Load more",
+  and have empty and error states. Narratives link to their detail page by title.
+  Closes contract gap 9. `AuthorPanel` now takes a `projectId` prop.
+
 ### Changed
 
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
