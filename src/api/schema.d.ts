@@ -146,6 +146,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/authors/{author_id}/cohorts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** An author's cohorts */
+        get: operations["author_cohorts_api_v1_authors__author_id__cohorts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/authors/{author_id}/narratives": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Narratives an author touched */
+        get: operations["author_narratives_api_v1_authors__author_id__narratives_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/authors/{author_id}/posts": {
         parameters: {
             query?: never;
@@ -4243,6 +4277,128 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AuthorOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    author_cohorts_api_v1_authors__author_id__cohorts_get: {
+        parameters: {
+            query: {
+                /** @description Project uuid or slug. Required everywhere. */
+                project_id: string;
+                /** @description Inclusive lower bound, UTC. */
+                date_from?: string | null;
+                /** @description Exclusive upper bound, UTC. */
+                date_to?: string | null;
+                /** @description IANA zone for bucketing and labels only; filtering is always UTC. */
+                tz?: string;
+                platform?: string[] | null;
+                narrative_id?: string[] | null;
+                cohort_id?: string[] | null;
+                author_group_id?: string[] | null;
+                sentiment?: string[] | null;
+                emotion?: string[] | null;
+                min_toxicity?: number | null;
+                min_risk?: number | null;
+                is_anomalous?: boolean | null;
+                is_bot_like?: boolean | null;
+                content_type?: string[] | null;
+                lang?: string[] | null;
+                /** @description Full-text query over post text. */
+                q?: string | null;
+                /** @description False = the UI's 'Original data' chip: exclude reposts. */
+                include_shared?: boolean;
+                /** @description Opaque cursor from the previous response's `next_cursor`. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path: {
+                author_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_CohortOut_"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    author_narratives_api_v1_authors__author_id__narratives_get: {
+        parameters: {
+            query: {
+                /** @description Project uuid or slug. Required everywhere. */
+                project_id: string;
+                /** @description Inclusive lower bound, UTC. */
+                date_from?: string | null;
+                /** @description Exclusive upper bound, UTC. */
+                date_to?: string | null;
+                /** @description IANA zone for bucketing and labels only; filtering is always UTC. */
+                tz?: string;
+                platform?: string[] | null;
+                narrative_id?: string[] | null;
+                cohort_id?: string[] | null;
+                author_group_id?: string[] | null;
+                sentiment?: string[] | null;
+                emotion?: string[] | null;
+                min_toxicity?: number | null;
+                min_risk?: number | null;
+                is_anomalous?: boolean | null;
+                is_bot_like?: boolean | null;
+                content_type?: string[] | null;
+                lang?: string[] | null;
+                /** @description Full-text query over post text. */
+                q?: string | null;
+                /** @description False = the UI's 'Original data' chip: exclude reposts. */
+                include_shared?: boolean;
+                /** @description Opaque cursor from the previous response's `next_cursor`. */
+                cursor?: string | null;
+                limit?: number;
+            };
+            header?: {
+                "X-API-Key"?: string | null;
+            };
+            path: {
+                author_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PageResponse_NarrativeSummary_"];
                 };
             };
             /** @description Validation Error */
