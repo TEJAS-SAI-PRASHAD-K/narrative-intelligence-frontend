@@ -36,6 +36,17 @@ export interface Column<T> {
   headerHint?: string;
 }
 
+/** Cursor paging driven by the caller. The cursor itself never reaches this component. */
+export interface TablePagination {
+  hasNextPage: boolean;
+  isFetchingNextPage: boolean;
+  onLoadMore: () => void;
+  /** Distinct rows matching the filters, or null when the backend did not count. */
+  total?: number | null | undefined;
+  /** Plural noun for the footer, such as "authors". */
+  noun: string;
+}
+
 export interface EntityTableProps<T> {
   /** Persists column visibility under this name. */
   tableId: string;
@@ -56,6 +67,8 @@ export interface EntityTableProps<T> {
   virtualizeAbove?: number;
   maxHeight?: string;
   footer?: ReactNode;
+  /** Renders a load-more footer in place of `footer`. */
+  pagination?: TablePagination;
   caption: string;
 }
 
@@ -79,6 +92,7 @@ export function EntityTable<T>({
   virtualizeAbove = 200,
   maxHeight = '32rem',
   footer,
+  pagination,
   caption,
 }: EntityTableProps<T>) {
   const [hidden, setHidden] = useLocalState<string[]>(
@@ -258,7 +272,35 @@ export function EntityTable<T>({
         </div>
       </div>
 
-      {footer}
+      {pagination ? <PaginationFooter pagination={pagination} loaded={rows.length} /> : footer}
+    </div>
+  );
+}
+
+function PaginationFooter({ pagination, loaded }: { pagination: TablePagination; loaded: number }) {
+  const { hasNextPage, isFetchingNextPage, onLoadMore, total, noun } = pagination;
+  const count = new Intl.NumberFormat('en-US');
+  const progress =
+    typeof total === 'number'
+      ? `Showing ${count.format(loaded)} of ${count.format(total)} ${noun}.`
+      : `Showing ${count.format(loaded)} ${noun}.`;
+
+  if (!hasNextPage) {
+    return (
+      <p className="text-2xs text-muted-foreground">
+        {count.format(loaded)} {noun}, complete for these filters.
+      </p>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <Button variant="outline" size="sm" onClick={onLoadMore} disabled={isFetchingNextPage}>
+        {isFetchingNextPage ? 'Loading...' : `Load more ${noun}`}
+      </Button>
+      <p className="text-2xs text-muted-foreground" aria-live="polite">
+        {progress}
+      </p>
     </div>
   );
 }

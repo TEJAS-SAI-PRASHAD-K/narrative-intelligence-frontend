@@ -23,15 +23,21 @@ import { toQueryParams, type FilterSpec, type ListSpec } from '@/lib/filters';
 
 export type DriverKind = 'authors' | 'hashtags' | 'urls';
 
+/**
+ * Drivers page by cursor. The cursor lives only in the infinite query's page params,
+ * never in the URL or the query key, so a shared link always starts at page one.
+ */
 export function useDrivers(kind: DriverKind, filters: FilterSpec, list: ListSpec) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: qk.drivers.list(kind, filters, list),
-    queryFn: () =>
+    initialPageParam: undefined as string | undefined,
+    queryFn: ({ pageParam }) =>
       api.get<DriversResponse>(`/drivers/${kind}`, {
         ...toQueryParams(filters),
         limit: list.limit,
-        cursor: list.cursor,
+        cursor: pageParam,
       }),
+    getNextPageParam: (last) => last.next_cursor ?? undefined,
     enabled: Boolean(filters.project_id),
   });
 }

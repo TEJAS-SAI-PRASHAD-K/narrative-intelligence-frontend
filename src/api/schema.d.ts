@@ -2133,8 +2133,19 @@ export interface components {
              * @enum {string}
              */
             entity_type: "author" | "hashtag" | "url" | "domain";
+            /** Filters Applied */
+            filters_applied?: {
+                [key: string]: unknown;
+            };
             /** Items */
             items: components["schemas"]["DriverItem"][];
+            /** Next Cursor */
+            next_cursor?: string | null;
+            /**
+             * Total
+             * @description Distinct entities matching the filters. Null when counting would cost more than the page itself.
+             */
+            total?: number | null;
         };
         /** EmotionShare */
         EmotionShare: {

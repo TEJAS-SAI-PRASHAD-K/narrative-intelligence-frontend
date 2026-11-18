@@ -14,6 +14,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Drivers tables page through `next_cursor`.** `useDrivers` is an infinite query and
+  `EntityTable` takes a `pagination` prop that renders a "Load more" footer with the row
+  count and, when the backend counted, the total. The cursor stays out of the URL, so a
+  shared link starts at page one. Closes contract-gaps #8; `openapi.json` and
+  `src/api/schema.d.ts` carry `next_cursor`, `total` and `filters_applied` on
+  `DriversResponse`.
 - **Filter chips show names.** `cohort_id`, `narrative_id` and `author_group_id` chips
   resolve through `GET /cohorts/{id}`, `GET /narratives/{id}` and
   `GET /author-groups/{id}`, cached per id, in both the filter bar and the top bar. While
