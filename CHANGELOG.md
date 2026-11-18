@@ -14,6 +14,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Contract sync for score ranges.** `HighRiskPost.risk_score` and
+  `AuthorScoreExplanation.risk_score` now declare `0..100`, and `GraphNode.bot_score`
+  and `DomainOut.sharing_author_bot_ratio` declare `0..1`, in `openapi.json`.
+- **`ScoreCell` scales are checked against the schema.** `scoreScale.contract.test.ts`
+  maps every call site to the field it renders and fails when `"hundred"` is not on a
+  `0..100` field or `"unit"` on a `0..1` one, or when a new call site is not listed.
 - **Hindi misinfo values name the model.** The post chip reads "Misinfo (Laya, title only)" for a
   Hindi post whose `scoring_version` carries a `laya=` stamp, with a tooltip saying the value is a
   separate model's rank within Hindi and not comparable with English. The language coverage panel
