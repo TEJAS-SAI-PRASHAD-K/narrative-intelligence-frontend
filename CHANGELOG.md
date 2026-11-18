@@ -14,6 +14,11 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Hindi misinfo values name the model.** The post chip reads "Misinfo (Laya, title only)" for a
+  Hindi post whose `scoring_version` carries a `laya=` stamp, with a tooltip saying the value is a
+  separate model's rank within Hindi and not comparable with English. The language coverage panel
+  notes that the misinfo figures combine two models when Hindi and English both have scored
+  values.
 - **Skipped scores read as sentences.** The "signals skipped" tooltip on a post maps
   `module:reason` codes to short sentences (`src/lib/skipReasons.ts`), including
   `fact_check_publisher`, which explains why a fact-checker's article has no misinfo
