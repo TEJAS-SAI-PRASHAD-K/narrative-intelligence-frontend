@@ -8,6 +8,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Added
 
+- **Telegram as a platform.** `openapi.json` and `src/api/schema.d.ts` now include the
+  `telegram` source. A Telegram post shows views and forwards as engagement (reactions
+  and forwards are labelled as Telegram names them), and a counter the channel does not
+  expose, such as hidden reactions, renders as not measured. `/kitchen-sink` has Telegram
+  posts.
+
+### Changed
+
+- **Platform lists follow the contract.** `pnpm gen:api` also writes `src/api/sources.ts`
+  from the `source` enum in `openapi.json`. The advanced filters and the network entry
+  page read that list instead of keeping their own copies, so a new source needs no edit.
 - **Write controls follow the key's scopes.** The app reads `GET /keys/me` once per
   session and disables **Update Now**, **Regenerate** and **Export** for a key without the
   `write` scope, with a tooltip naming the missing scope. While the lookup loads or if it

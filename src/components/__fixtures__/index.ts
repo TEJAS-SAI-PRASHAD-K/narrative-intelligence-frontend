@@ -66,7 +66,14 @@ export const languageCoverage: LanguageCoverage[] = [
   {
     lang: 'en',
     total: 716,
-    scored: { toxicity: 716, anomaly: 716, misinfo: 716, stance: 716, sentiment: 716, emotion: 716 },
+    scored: {
+      toxicity: 716,
+      anomaly: 716,
+      misinfo: 716,
+      stance: 716,
+      sentiment: 716,
+      emotion: 716,
+    },
   },
   {
     lang: 'hi',
@@ -150,7 +157,8 @@ export const scoreExplanationRenormalized: NarrativeScoreExplanation = {
   scoring_version: 'fusion-v1.3',
   formula:
     'fusion = 100 * Σ(wᵢ · normalise(sᵢ)) for every measured signal sᵢ, with weights renormalised over the measured subset',
-  normalization: 'Each signal is min-max normalised to [0,1] over the project corpus before weighting.',
+  normalization:
+    'Each signal is min-max normalised to [0,1] over the project corpus before weighting.',
   components: [
     {
       name: 'negative_sentiment',
@@ -267,6 +275,31 @@ export const postUnscored: PostOut = {
   text: 'Ingested after the last scoring pass, so no model has looked at it yet.',
   scores: null,
   engagement: { likes: null, shares: null, replies: null, views: null },
+};
+
+/** Telegram: views and forwards measured, reactions shown, no discussion group. */
+export const postTelegram: PostOut = {
+  ...postWithNullViews,
+  id: 'post-demo-3',
+  native_id: '1042',
+  source: 'telegram',
+  source_detail: 't.me/harbor_bulletin',
+  author_id: 'auth-demo-3',
+  author_handle: 'harbor_bulletin',
+  text: 'Forwarded from a channel with no public record: the count was reset overnight, share before it is deleted.',
+  hashtags: [],
+  domains: [],
+  urls: [],
+  engagement: { likes: 312, shares: 4_870, replies: null, views: 58_300 },
+};
+
+/** Telegram channel that hides reactions: likes is not measured, forwards still are. */
+export const postTelegramNoReactions: PostOut = {
+  ...postTelegram,
+  id: 'post-demo-4',
+  native_id: '1043',
+  text: 'Second post from the same channel, reactions switched off.',
+  engagement: { likes: null, shares: 0, replies: null, views: 12_040 },
 };
 
 export const compassSubstantiated: CompassContext = {

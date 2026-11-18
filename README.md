@@ -92,7 +92,7 @@ capabilities**. On a stock local stack:
 |---|---|
 | `pnpm dev` | Dev server |
 | `pnpm build` | Typecheck + production build |
-| `pnpm gen:api` | Regenerate `src/api/schema.d.ts` from `openapi.json` |
+| `pnpm gen:api` | Regenerate `src/api/schema.d.ts` and `src/api/sources.ts` from `openapi.json` |
 | `pnpm gen:api:check` | Fail if the generated types have drifted from the contract |
 | `pnpm typecheck` | `tsc -b --noEmit`, strict |
 | `pnpm lint` | ESLint, zero warnings tolerated |

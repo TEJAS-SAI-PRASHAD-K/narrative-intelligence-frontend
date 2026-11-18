@@ -1,5 +1,6 @@
 import { SlidersHorizontal } from 'lucide-react';
 import { useNarrativeFeed } from '@/api/queries/narratives';
+import { PLATFORMS } from '@/api/sources';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -26,7 +27,6 @@ import {
 import { humanizeEnum, platformLabel, truncate } from '@/lib/format';
 
 /** Vocabularies the contract fixes. Nothing here is invented by the frontend. */
-const PLATFORMS = ['reddit', 'mastodon', 'news', 'gdelt', 'youtube'] as const;
 const SENTIMENTS = ['positive', 'neutral', 'negative'] as const;
 const EMOTIONS = [
   'fear',
