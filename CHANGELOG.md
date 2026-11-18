@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **CI workflow.** `.github/workflows/ci.yml` runs install (frozen lockfile), lint, test,
+  build and `gen:api:check` on pull requests and on `main`, so contract drift fails the
+  check. Node is pinned in `.nvmrc` (22) and pnpm through `packageManager`.
+
 ### Changed
 
 - **Skipped scores read as sentences.** The "signals skipped" tooltip on a post maps
