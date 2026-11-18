@@ -8,6 +8,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Skipped scores read as sentences.** The "signals skipped" tooltip on a post maps
+  `module:reason` codes to short sentences (`src/lib/skipReasons.ts`), including
+  `fact_check_publisher`, which explains why a fact-checker's article has no misinfo
+  score. A code with no entry is shown as itself.
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
   platform measured engagement, not `0`. `openapi.json` and `src/api/schema.d.ts` carry
   the new nullable fields: `TimeseriesPoint.value`, the `TimeseriesPoint.series` values,
