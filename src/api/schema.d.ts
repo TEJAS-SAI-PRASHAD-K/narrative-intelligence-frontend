@@ -1680,6 +1680,8 @@ export interface components {
         AuthorsBreakdown: {
             author_groups: components["schemas"]["Metric"];
             bot_like: components["schemas"]["Metric"];
+            /** @description Share of coordination-scored authors above the fusion coordination threshold, as a value in [0, 1]. This is the author signal fusion reads. The value is null when no author in scope was scored by the coordination stage, never 0. */
+            coordinated_author_ratio: components["schemas"]["Metric"];
             /** Top Cohorts */
             top_cohorts?: components["schemas"]["HierarchyNode"][];
             total: components["schemas"]["Metric"];
@@ -2830,12 +2832,20 @@ export interface components {
         NarrativeScorecard: {
             /** Anomalous */
             anomalous?: number | null;
-            /** Bot Like */
+            /**
+             * Bot Like
+             * @description Share of the narrative's classifiable authors the account classifier scores as bot-like. Fusion does not read this: the classifier does not generalize across folds, so it is shown for context only. Null means not measured.
+             */
             bot_like?: number | null;
             /** Compass Risk */
             compass_risk?: ("high" | "medium" | "low") | null;
             /** Computed At */
             computed_at?: string | null;
+            /**
+             * Coordinated Author Ratio
+             * @description Share of the narrative's coordination-scored authors whose coordination score is above the fusion threshold. This is the author signal fusion reads. Null means no member author was scored by the coordination stage; it is never 0 for not measured.
+             */
+            coordinated_author_ratio?: number | null;
             /** Fusion Score */
             fusion_score?: number | null;
             /** Missing */
