@@ -6,6 +6,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **CI workflow.** `.github/workflows/ci.yml` runs install (frozen lockfile), lint, test,
+  build and `gen:api:check` on pull requests and on `main`, so contract drift fails the
+  check. Node is pinned in `.nvmrc` (22) and pnpm through `packageManager`.
+
 ### Changed
 
 - **Hindi misinfo values name the model.** The post chip reads "Misinfo (Laya, title only)" for a
@@ -13,6 +19,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   separate model's rank within Hindi and not comparable with English. The language coverage panel
   notes that the misinfo figures combine two models when Hindi and English both have scored
   values.
+- **Skipped scores read as sentences.** The "signals skipped" tooltip on a post maps
+  `module:reason` codes to short sentences (`src/lib/skipReasons.ts`), including
+  `fact_check_publisher`, which explains why a fact-checker's article has no misinfo
+  score. A code with no entry is shown as itself.
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
   platform measured engagement, not `0`. `openapi.json` and `src/api/schema.d.ts` carry
   the new nullable fields: `TimeseriesPoint.value`, the `TimeseriesPoint.series` values,

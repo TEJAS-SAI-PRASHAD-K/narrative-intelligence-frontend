@@ -16,6 +16,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { misinfoModelOf, LAYA_MISINFO_NOTE } from '@/lib/misinfoModel';
 import { formatCount, formatDateTime, formatScore, humanizeEnum, platformLabel } from '@/lib/format';
+import { describeSkipReason } from '@/lib/skipReasons';
 import { cn } from '@/lib/utils';
 
 /**
@@ -267,7 +268,12 @@ function ScoreChips({
             </span>
           </TooltipTrigger>
           <TooltipContent>
-            The scorer skipped: {skipped.join(', ')}. Those fields are absent, not zero.
+            <ul className="space-y-1">
+              {skipped.map((code) => (
+                <li key={code}>{describeSkipReason(code)}</li>
+              ))}
+            </ul>
+            <p className="mt-1 text-muted-foreground">Those fields are absent, not zero.</p>
           </TooltipContent>
         </Tooltip>
       )}
