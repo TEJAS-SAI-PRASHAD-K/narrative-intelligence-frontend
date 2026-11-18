@@ -72,6 +72,8 @@ export function formatMetricValue(
 ): string {
   if (!isMeasured(value)) return NOT_MEASURED;
   if (unit === '%') return formatPct(value);
+  // A 0..1 share, as the coordinated author ratio is served.
+  if (unit === 'ratio') return formatPct(value * 100);
   if (unit === 'score') return formatDecimal(value, 2);
   const base = formatCount(value);
   return unit && unit !== 'count' ? `${base} ${unit}` : base;

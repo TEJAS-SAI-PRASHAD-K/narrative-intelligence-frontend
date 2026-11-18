@@ -115,6 +115,7 @@ export const kpiBundle: KpiBundle = {
 
 export const scorecardComplete: NarrativeScorecard = {
   priority: 'high',
+  coordinated_author_ratio: 0.34,
   bot_like: 0.71,
   anomalous: 0.63,
   toxicity: 0.48,
@@ -129,6 +130,7 @@ export const scorecardComplete: NarrativeScorecard = {
 /** Renders "—" for authenticity, never 0. */
 export const scorecardMissing: NarrativeScorecard = {
   priority: 'medium',
+  coordinated_author_ratio: null,
   bot_like: null,
   anomalous: 0.31,
   toxicity: null,

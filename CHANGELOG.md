@@ -18,6 +18,12 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **The scorecard and the authors KPI show the coordination input to fusion.** Contract
+  sync adds `NarrativeScorecard.coordinated_author_ratio` and
+  `AuthorsBreakdown.coordinated_author_ratio`. `RiskScorecard` gains a Coordinated Authors
+  field and the authors drilldown gains a Coordinated authors metric (unit `ratio` renders
+  as a percentage). A null value renders `NotMeasured`. Bot-Like stays, with a note that
+  fusion does not use it.
 - **Drivers tables page through `next_cursor`.** `useDrivers` is an infinite query and
   `EntityTable` takes a `pagination` prop that renders a "Load more" footer with the row
   count and, when the backend counted, the total. The cursor stays out of the URL, so a

@@ -88,7 +88,7 @@ export default function KitchenSinkPage() {
 
       <Section
         title="RiskScorecard"
-        note="Six fields, always, in one order. Fields in missing[] render “not measured” — nowhere does the card render 0."
+        note="Seven fields, always, in one order. Fields in missing[] render “not measured” — nowhere does the card render 0."
       >
         <div className="grid gap-3 md:grid-cols-2">
           <Labelled label="Complete">
@@ -96,7 +96,7 @@ export default function KitchenSinkPage() {
               <RiskScorecard scorecard={fx.scorecardComplete} />
             </div>
           </Labelled>
-          <Labelled label='missing: ["authenticity", "bot_like", "toxicity"]'>
+          <Labelled label='coordinated_author_ratio and bot_like null, missing: ["authenticity", "bot_like", "toxicity"]'>
             <div className="card-surface p-4">
               <RiskScorecard
                 scorecard={fx.scorecardMissing}

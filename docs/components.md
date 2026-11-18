@@ -32,8 +32,11 @@ analyst should never have to re-find "Authors".
 ### `<RiskScorecard scorecard={NarrativeScorecard}>`
 `src/components/risk/RiskScorecard.tsx`
 
-Six fields, always, in one order: **Priority · Bot-Like · Anomalous · Toxicity ·
-Compass Risk · Negative Sentiment**. Identical label styling on every surface.
+Seven fields, always, in one order: **Priority · Coordinated Authors · Bot-Like ·
+Anomalous · Toxicity · Compass Risk · Negative Sentiment**. Coordinated Authors is the
+author signal the fusion score reads (`coordinated_author_ratio`); Bot-Like is shown for
+context and its tooltip says fusion does not use it. A null value renders `NotMeasured`.
+Identical label styling on every surface.
 
 A fixed grid — three across, or two in a narrow sidebar. It was a wrapping flex row,
 which gave the six fields a different width and a different wrap point on every surface,
