@@ -7,8 +7,9 @@ implied, is written down here instead of being worked around silently.
 Each entry says what was observed, what the UI does now, and what Phase 4 would need
 to change for the workaround to go away.
 
-Entries are numbered in one continuous sequence (observations 1-6, gaps 7-10); code
-comments reference them as `contract-gaps #N`.
+Entries are numbered in one continuous sequence (observations 1-6, gaps 8-10; gap 7
+is closed and its number is retired), and code comments reference them as
+`contract-gaps #N`.
 
 ---
 
@@ -119,23 +120,6 @@ as a frontend bug.
 ---
 
 ## Gaps — data a screen wanted and no route provides
-
-### 7. No route resolves a cohort id to a name outside a list response
-
-**Wanted.** The filter bar renders a removable chip per active filter. For
-`cohort_id`, `narrative_id` and `author_group_id` the chip should read
-`Cohort: Verified journalists`, not `Cohort: 7f3a…`.
-
-**Available.** `GET /cohorts`, `GET /narratives` and `GET /author-groups` return names
-only as part of a filtered list; there is no `GET /cohorts/{id}` and no bulk
-`?ids=` lookup.
-
-**UI behaviour.** `FilterBar` accepts a `resolveChipLabel` callback, and pages that
-already hold the relevant list pass a lookup into it. Pages that do not hold the list
-render the raw id. No extra request is issued purely to decorate a chip.
-
-**Phase 4 action.** A `GET /cohorts/{id}` (and equivalents), or an `ids` filter on the
-existing list routes, would let every chip render a name on every page.
 
 ### 8. `GET /drivers/*` returns no pagination cursor
 

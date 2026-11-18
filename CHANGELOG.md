@@ -8,6 +8,14 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Changed
 
+- **Filter chips show names.** `cohort_id`, `narrative_id` and `author_group_id` chips
+  resolve through `GET /cohorts/{id}`, `GET /narratives/{id}` and
+  `GET /author-groups/{id}`, cached per id, in both the filter bar and the top bar. While
+  loading, on a 404 or on any other failure the chip shows the short id and its title says
+  why. `FilterBar` no longer takes `resolveChipLabel` (contract-gaps #7 is closed).
+- **Contract sync for name lookups.** `openapi.json` and `src/api/schema.d.ts` add
+  `GET /cohorts/{cohort_id}`, `GET /author-groups/{group_id}` and the `NamedRef` schema.
+
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
   platform measured engagement, not `0`. `openapi.json` and `src/api/schema.d.ts` carry
   the new nullable fields: `TimeseriesPoint.value`, the `TimeseriesPoint.series` values,

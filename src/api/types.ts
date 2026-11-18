@@ -51,6 +51,7 @@ export type AuthorScoreExplanation = S['AuthorScoreExplanation'];
 export type AuthorTimeline = S['AuthorTimeline'];
 export type AuthorGroupOut = S['AuthorGroupOut'];
 export type CohortOut = S['CohortOut'];
+export type NamedRef = S['NamedRef'];
 export type CohortMembership = S['CohortMembership'];
 
 // --- overview --------------------------------------------------------------
