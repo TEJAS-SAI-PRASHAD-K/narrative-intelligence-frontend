@@ -29,19 +29,52 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   and the `postWithNullViews` fixture carry `model_versions` maps. The language coverage
   panel still infers the model mix from language coverage, because the API has no
   aggregate map.
+
 - **Platform lists follow the contract.** `pnpm gen:api` also writes `src/api/sources.ts`
   from the `source` enum in `openapi.json`. The advanced filters and the network entry
   page read that list instead of keeping their own copies, so a new source needs no edit.
+
 - **Write controls follow the key's scopes.** The app reads `GET /keys/me` once per
   session and disables **Update Now**, **Regenerate** and **Export** for a key without the
   `write` scope, with a tooltip naming the missing scope. While the lookup loads or if it
   fails the controls stay enabled and the server decides. Closes contract gap 10.
+
 - **Contract sync for `GET /keys/me`.** `openapi.json` and `src/api/schema.d.ts` carry the
   new route and the `ApiKeySelf` schema.
+
 - **The author slide-over and page list the author's cohorts and narratives.** Both
   load from `GET /authors/{author_id}/cohorts` and `/narratives`, page with "Load more",
   and have empty and error states. Narratives link to their detail page by title.
   Closes contract gap 9. `AuthorPanel` now takes a `projectId` prop.
+
+- **Drivers tables page through `next_cursor`.** `useDrivers` is an infinite query and
+  `EntityTable` takes a `pagination` prop that renders a "Load more" footer with the row
+  count and, when the backend counted, the total. The cursor stays out of the URL, so a
+  shared link starts at page one. Closes contract-gaps #8; `openapi.json` and
+  `src/api/schema.d.ts` carry `next_cursor`, `total` and `filters_applied` on
+  `DriversResponse`.
+
+- **Filter chips show names.** `cohort_id`, `narrative_id` and `author_group_id` chips
+  resolve through `GET /cohorts/{id}`, `GET /narratives/{id}` and
+  `GET /author-groups/{id}`, cached per id, in both the filter bar and the top bar. While
+  loading, on a 404 or on any other failure the chip shows the short id and its title says
+  why. `FilterBar` no longer takes `resolveChipLabel` (contract-gaps #7 is closed).
+
+- **Contract sync for name lookups.** `openapi.json` and `src/api/schema.d.ts` add
+  `GET /cohorts/{cohort_id}`, `GET /author-groups/{group_id}` and the `NamedRef` schema.
+
+- **Contract sync for score ranges.** `HighRiskPost.risk_score` and
+  `AuthorScoreExplanation.risk_score` now declare `0..100`, and `GraphNode.bot_score`
+  and `DomainOut.sharing_author_bot_ratio` declare `0..1`, in `openapi.json`.
+
+- **`ScoreCell` scales are checked against the schema.** `scoreScale.contract.test.ts`
+  maps every call site to the field it renders and fails when `"hundred"` is not on a
+  `0..100` field or `"unit"` on a `0..1` one, or when a new call site is not listed.
+
+## [0.3.0] — 2026-11-18
+
+### Changed
+
 - **CI workflow.** `.github/workflows/ci.yml` runs install (frozen lockfile), lint, test,
   build and `gen:api:check` on pull requests and on `main`, so contract drift fails the
   check. Node is pinned in `.nvmrc` (22) and pnpm through `packageManager`.
@@ -52,49 +85,36 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   field and the authors drilldown gains a Coordinated authors metric (unit `ratio` renders
   as a percentage). A null value renders `NotMeasured`. Bot-Like stays, with a note that
   fusion does not use it.
-- **Drivers tables page through `next_cursor`.** `useDrivers` is an infinite query and
-  `EntityTable` takes a `pagination` prop that renders a "Load more" footer with the row
-  count and, when the backend counted, the total. The cursor stays out of the URL, so a
-  shared link starts at page one. Closes contract-gaps #8; `openapi.json` and
-  `src/api/schema.d.ts` carry `next_cursor`, `total` and `filters_applied` on
-  `DriversResponse`.
-- **Filter chips show names.** `cohort_id`, `narrative_id` and `author_group_id` chips
-  resolve through `GET /cohorts/{id}`, `GET /narratives/{id}` and
-  `GET /author-groups/{id}`, cached per id, in both the filter bar and the top bar. While
-  loading, on a 404 or on any other failure the chip shows the short id and its title says
-  why. `FilterBar` no longer takes `resolveChipLabel` (contract-gaps #7 is closed).
-- **Contract sync for name lookups.** `openapi.json` and `src/api/schema.d.ts` add
-  `GET /cohorts/{cohort_id}`, `GET /author-groups/{group_id}` and the `NamedRef` schema.
 
-- **Contract sync for score ranges.** `HighRiskPost.risk_score` and
-  `AuthorScoreExplanation.risk_score` now declare `0..100`, and `GraphNode.bot_score`
-  and `DomainOut.sharing_author_bot_ratio` declare `0..1`, in `openapi.json`.
-- **`ScoreCell` scales are checked against the schema.** `scoreScale.contract.test.ts`
-  maps every call site to the field it renders and fails when `"hundred"` is not on a
-  `0..100` field or `"unit"` on a `0..1` one, or when a new call site is not listed.
 - **Hindi misinfo values name the model.** The post chip reads "Misinfo (Laya, title only)" for a
   Hindi post whose `model_versions` map has a `laya` stamp, with a tooltip saying the value is a
   separate model's rank within Hindi and not comparable with English. The language coverage panel
   notes that the misinfo figures combine two models when Hindi and English both have scored
   values.
+
 - **Skipped scores read as sentences.** The "signals skipped" tooltip on a post maps
   `module:reason` codes to short sentences (`src/lib/skipReasons.ts`), including
   `fact_check_publisher`, which explains why a fact-checker's article has no misinfo
   score. A code with no entry is shown as itself.
+
 - **Contract sync for unmeasured engagement.** The backend now sends `null` where no
   platform measured engagement, not `0`. `openapi.json` and `src/api/schema.d.ts` carry
   the new nullable fields: `TimeseriesPoint.value`, the `TimeseriesPoint.series` values,
   `AuthorTimelinePoint.engagement`, `TimelinePoint.engagement` and
   `NarrativeSummary.engagement_total`.
+
 - **Unmeasured engagement is a gap, never zero.** Timeseries and narrative timeline
   charts leave a null point as a gap. In grouped mode a missing series key and a null
   value are both gaps. A chart where every engagement point is null shows "No platform in
   this view measures engagement." and draws no line.
+
 - **Counts that can be null show an em dash.** The narrative card, the narrative detail
   stats, the drivers table and the author timeline use `MeasuredCount`. Its hover and
   screen-reader text read "Not measured".
+
 - **Isolated points keep a dot.** A measured point between two gaps draws a small dot,
   so real data does not look absent.
+
 - **`NotMeasured` is reachable by keyboard.** The dash is hidden from screen readers and
   the reason is read as text.
 
